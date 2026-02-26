@@ -6,11 +6,12 @@ import {
   formatPercent,
   formatCost,
   formatRelativeDate,
+  formatGpa,
 } from "@/lib/formatting";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { ExpandedRow } from "./ExpandedRow";
-import { PassRateBar } from "./PassRateBar";
+import { PassRateBar, rateColor } from "./PassRateBar";
 
 function rankStyle(rank: number): string {
   if (rank === 1) return "text-[oklch(0.75_0.15_85)]"; // gold
@@ -31,7 +32,7 @@ function MiniCourseBars({
       {courseIds.map((id) => {
         const course = entry.courses[id];
         const rate = course?.passRate ?? 0;
-        const heightPx = Math.max(2, Math.round(rate * 32));
+        const heightPx = Math.max(2, Math.round((rate / 100) * 32));
         return (
           <div
             key={id}
@@ -42,15 +43,7 @@ function MiniCourseBars({
             <div
               className={cn(
                 "h-full w-full rounded-sm",
-                rate >= 0.9
-                  ? "bg-[oklch(0.72_0.19_142)]"
-                  : rate >= 0.7
-                    ? "bg-[oklch(0.80_0.18_85)]"
-                    : rate >= 0.5
-                      ? "bg-[oklch(0.75_0.18_55)]"
-                      : rate > 0
-                        ? "bg-[oklch(0.63_0.21_25)]"
-                        : "bg-muted"
+                rate > 0 ? rateColor(rate) : "bg-muted"
               )}
             />
           </div>
@@ -75,7 +68,6 @@ export function LeaderboardRow({
 }) {
   const courseIds = Object.keys(courses).sort();
 
-  // Desktop table row
   return (
     <>
       {/* Desktop */}
@@ -134,19 +126,26 @@ export function LeaderboardRow({
             </div>
           </div>
         </td>
-        <td className="p-2 align-middle font-mono tabular-nums text-sm font-semibold">
-          {formatPercent(entry.overall.passRate)}
-        </td>
-        <td className="p-2 align-middle font-mono tabular-nums text-sm">
-          {entry.overall.assignmentsSolved}/{entry.overall.assignmentsTotal}
-        </td>
-        <td className="p-2 align-middle font-mono tabular-nums text-sm">
-          {formatCost(entry.overall.totalCost)}
-        </td>
-        <td className="p-2 align-middle text-sm text-muted-foreground">
-          {formatRelativeDate(entry.metadata.date)}
-        </td>
         <td className="p-2 align-middle">
+          <div className="flex flex-col">
+            <span className="font-mono tabular-nums text-sm font-semibold">
+              {formatPercent(entry.scores.overall)}
+            </span>
+            <span className="font-mono tabular-nums text-xs text-muted-foreground">
+              {formatGpa(entry.scores.gpa)} GPA
+            </span>
+          </div>
+        </td>
+        <td className="p-2 align-middle font-mono tabular-nums text-sm hidden md:table-cell">
+          {entry.assignmentsSolved}/{entry.assignmentsTotal}
+        </td>
+        <td className="p-2 align-middle font-mono tabular-nums text-sm hidden md:table-cell">
+          {formatCost(entry.totals.costUsd)}
+        </td>
+        <td className="p-2 align-middle text-sm text-muted-foreground hidden md:table-cell">
+          {formatRelativeDate(entry.date)}
+        </td>
+        <td className="p-2 align-middle hidden md:table-cell">
           <MiniCourseBars entry={entry} courseIds={courseIds} />
         </td>
       </tr>
@@ -216,11 +215,11 @@ export function LeaderboardRow({
               </div>
               <div className="text-right">
                 <div className="font-mono tabular-nums text-lg font-semibold">
-                  {formatPercent(entry.overall.passRate)}
+                  {formatPercent(entry.scores.overall)}
                 </div>
                 <div className="font-mono tabular-nums text-xs text-muted-foreground">
-                  {entry.overall.assignmentsSolved}/
-                  {entry.overall.assignmentsTotal} solved
+                  {entry.assignmentsSolved}/
+                  {entry.assignmentsTotal} solved
                 </div>
               </div>
             </div>
@@ -228,9 +227,9 @@ export function LeaderboardRow({
             <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
               <div className="flex gap-3">
                 <span className="font-mono tabular-nums">
-                  {formatCost(entry.overall.totalCost)}
+                  {formatCost(entry.totals.costUsd)}
                 </span>
-                <span>{formatRelativeDate(entry.metadata.date)}</span>
+                <span>{formatRelativeDate(entry.date)}</span>
               </div>
               <MiniCourseBars entry={entry} courseIds={courseIds} />
             </div>

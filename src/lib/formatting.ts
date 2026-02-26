@@ -20,8 +20,9 @@ export function formatTime(seconds: number): string {
   return `${hours}h ${mins.toString().padStart(2, "0")}m`;
 }
 
+/** Format a 0-100 percentage value */
 export function formatPercent(rate: number): string {
-  return `${(rate * 100).toFixed(1)}%`;
+  return `${rate.toFixed(1)}%`;
 }
 
 export function formatRelativeDate(dateStr: string): string {
@@ -43,4 +44,8 @@ export function formatRelativeDate(dateStr: string): string {
   if (diffMonths === 1) return "1mo ago";
   if (diffMonths < 12) return `${diffMonths}mo ago`;
   return date.toLocaleDateString("en-US", { month: "short", year: "numeric" });
+}
+
+export function formatGpa(gpa: number): string {
+  return gpa.toFixed(2);
 }

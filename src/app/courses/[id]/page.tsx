@@ -28,13 +28,15 @@ export default async function CourseDetailPage({
       const c = e.courses[id];
       return {
         model: e.model.name,
+        grade: c.grade,
+        letter: c.letter,
         passRate: c.passRate,
-        solved: c.assignments.filter((a) => a.solved).length,
+        solved: c.assignments.filter((a) => a.score >= 100).length,
         total: c.assignments.length,
         cost: c.totalCost,
       };
     })
-    .sort((a, b) => b.passRate - a.passRate);
+    .sort((a, b) => b.grade - a.grade);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
@@ -50,30 +52,6 @@ export default async function CourseDetailPage({
       </p>
 
       <section className="mt-10">
-        <h2 className="text-2xl font-bold tracking-tight">Assignments</h2>
-        <div className="mt-4">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-16">#</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead className="text-right">Tests</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {course.assignments.map((a) => (
-                <TableRow key={a.number}>
-                  <TableCell>{a.number}</TableCell>
-                  <TableCell>{a.displayName}</TableCell>
-                  <TableCell className="text-right">{a.totalTests}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      </section>
-
-      <section className="mt-10">
         <h2 className="text-2xl font-bold tracking-tight">
           Course Leaderboard
         </h2>
@@ -83,6 +61,7 @@ export default async function CourseDetailPage({
               <TableRow>
                 <TableHead className="w-16">Rank</TableHead>
                 <TableHead>Model</TableHead>
+                <TableHead className="text-right">Grade</TableHead>
                 <TableHead className="text-right">Pass Rate</TableHead>
                 <TableHead className="text-right">Solved</TableHead>
                 <TableHead className="text-right">Cost</TableHead>
@@ -93,13 +72,16 @@ export default async function CourseDetailPage({
                 <TableRow key={entry.model}>
                   <TableCell>{i + 1}</TableCell>
                   <TableCell className="font-medium">{entry.model}</TableCell>
-                  <TableCell className="text-right">
-                    {(entry.passRate * 100).toFixed(1)}%
+                  <TableCell className="text-right font-mono tabular-nums">
+                    {entry.grade.toFixed(1)}% ({entry.letter})
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-right font-mono tabular-nums">
+                    {entry.passRate.toFixed(1)}%
+                  </TableCell>
+                  <TableCell className="text-right font-mono tabular-nums">
                     {entry.solved}/{entry.total}
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-right font-mono tabular-nums">
                     ${entry.cost.toFixed(2)}
                   </TableCell>
                 </TableRow>

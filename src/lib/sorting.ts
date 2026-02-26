@@ -3,18 +3,22 @@ import type { BenchmarkEntry, RankingMetric, SortDirection } from "./types";
 function getMetricValue(entry: BenchmarkEntry, metric: RankingMetric): number {
   switch (metric) {
     case "overall":
-      return entry.overall.passRate;
+      return entry.scores.overall;
+    case "gpa":
+      return entry.scores.gpa;
     case "passRate":
-      return entry.overall.testsPassed / entry.overall.testsTotal;
+      return entry.totals.testsTotal > 0
+        ? (entry.totals.testsPassed / entry.totals.testsTotal) * 100
+        : 0;
     case "solved":
-      return entry.overall.assignmentsSolved;
+      return entry.assignmentsSolved;
     case "costEfficiency":
-      return entry.overall.totalCost > 0
-        ? entry.overall.passRate / entry.overall.totalCost
+      return entry.totals.costUsd > 0
+        ? entry.scores.overall / entry.totals.costUsd
         : 0;
     case "speed":
-      return entry.overall.totalTimeSeconds > 0
-        ? entry.overall.passRate / entry.overall.totalTimeSeconds
+      return entry.totals.durationMs > 0
+        ? entry.scores.overall / (entry.totals.durationMs / 1000)
         : 0;
   }
 }
@@ -65,41 +69,39 @@ export function filterByCourses(
       Object.entries(entry.courses).filter(([id]) => courseIds.includes(id))
     );
     const courseValues = Object.values(filteredCourses);
-    const passRate =
-      courseValues.length > 0
-        ? courseValues.reduce((sum, c) => sum + c.passRate, 0) /
-          courseValues.length
-        : 0;
     const testsPassed = courseValues.reduce((s, c) => s + c.testsPassed, 0);
     const testsTotal = courseValues.reduce((s, c) => s + c.testsTotal, 0);
     const totalCost = courseValues.reduce((s, c) => s + c.totalCost, 0);
-    const totalTimeSeconds = courseValues.reduce(
-      (s, c) => s + c.totalTimeSeconds,
+    const durationMs = courseValues.reduce(
+      (s, c) => s + c.totalTimeSeconds * 1000,
       0
     );
-    const totalTokens = courseValues.reduce((s, c) => s + c.totalTokens, 0);
     const assignmentsSolved = courseValues.reduce(
-      (s, c) => c.assignments.filter((a) => a.solved).length + s,
+      (s, c) => c.assignments.filter((a) => a.score >= 100).length + s,
       0
     );
     const assignmentsTotal = courseValues.reduce(
       (s, c) => c.assignments.length + s,
       0
     );
+    // Recalculate overall as average of filtered course grades
+    const overall =
+      courseValues.length > 0
+        ? courseValues.reduce((s, c) => s + c.grade, 0) / courseValues.length
+        : 0;
 
     return {
       ...entry,
-      overall: {
-        ...entry.overall,
-        passRate,
+      scores: { ...entry.scores, overall },
+      totals: {
+        ...entry.totals,
         testsPassed,
         testsTotal,
-        totalCost,
-        totalTimeSeconds,
-        totalTokens,
-        assignmentsSolved,
-        assignmentsTotal,
+        costUsd: totalCost,
+        durationMs,
       },
+      assignmentsSolved,
+      assignmentsTotal,
       courses: filteredCourses,
     };
   });

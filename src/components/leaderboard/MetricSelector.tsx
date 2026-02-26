@@ -11,6 +11,7 @@ import {
 
 const METRICS: { value: RankingMetric; label: string }[] = [
   { value: "overall", label: "Overall Score" },
+  { value: "gpa", label: "GPA" },
   { value: "passRate", label: "Raw Pass Rate" },
   { value: "solved", label: "Assignments Solved" },
   { value: "costEfficiency", label: "Cost Efficiency" },
