@@ -152,6 +152,7 @@ export interface AssignmentResult {
     status: string;
     pointsEarned?: number;
     pointsPossible?: number;
+    feedback?: string;
   };
   testResults?: TestResult[];
 }

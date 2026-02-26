@@ -17,7 +17,7 @@ const MODEL_REGISTRY: Record<
   "claude-opus-4-6": {
     name: "Claude Opus 4.6",
     provider: "Anthropic",
-    logo: "/logos/anthropic.png",
+    logo: "/logos/claude.svg",
     tags: ["closed-source"],
   },
   "gpt-5.2-codex": {
@@ -100,6 +100,7 @@ function transformRun(run: ArchiveRun): BenchmarkEntry {
               status: ws.llm_grade.status,
               pointsEarned: ws.llm_grade.points_earned,
               pointsPossible: ws.llm_grade.points_possible,
+              feedback: ws.llm_grade.feedback,
             }
           : undefined,
         testResults: ws.test_results?.map((t) => ({

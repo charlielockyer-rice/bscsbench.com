@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { ChevronRight, Check, X } from "lucide-react";
+import { ChevronRight, Check, X, PenLine } from "lucide-react";
 import type { BenchmarkEntry, CourseInfo, TestResult } from "@/lib/types";
 import { formatCost, formatTime, formatPercent } from "@/lib/formatting";
 import { PassRateBar } from "./PassRateBar";
@@ -73,7 +73,7 @@ export function ExpandedRow({
           <tr className="text-xs uppercase tracking-wider text-muted-foreground">
             <th className="pb-2 pr-4 text-left font-medium">Course</th>
             <th className="pb-2 pr-4 text-left font-medium">Tests</th>
-            <th className="pb-2 pr-4 text-left font-medium w-32">Pass Rate</th>
+            <th className="pb-2 pr-4 text-left font-medium w-32">Score</th>
             <th className="pb-2 pr-4 text-right font-medium">Cost</th>
             <th className="pb-2 text-right font-medium">Time</th>
           </tr>
@@ -141,6 +141,12 @@ export function ExpandedRow({
                   courseData.assignments.map((a) => {
                     const hasTests =
                       a.testResults && a.testResults.length > 0;
+                    const hasWritten =
+                      a.llmGrade?.status === "graded" &&
+                      a.llmGrade.pointsEarned != null;
+                    const hasFeedback =
+                      hasWritten && !!a.llmGrade!.feedback;
+                    const isExpandable = hasTests || hasFeedback;
                     const isAssignmentOpen = expandedAssignment === a.id;
 
                     return (
@@ -148,11 +154,11 @@ export function ExpandedRow({
                         <tr
                           className={cn(
                             "border-t border-border/30 bg-muted/20 text-xs",
-                            hasTests &&
+                            isExpandable &&
                               "cursor-pointer hover:bg-muted/30"
                           )}
                           onClick={
-                            hasTests
+                            isExpandable
                               ? (e) => {
                                   e.stopPropagation();
                                   setExpandedAssignment(
@@ -164,7 +170,7 @@ export function ExpandedRow({
                         >
                           <td className="py-1.5 pr-4 pl-9">
                             <div className="flex items-center gap-1.5">
-                              {hasTests && (
+                              {isExpandable && (
                                 <ChevronRight
                                   className={cn(
                                     "size-3 text-muted-foreground transition-transform",
@@ -173,18 +179,20 @@ export function ExpandedRow({
                                 />
                               )}
                               <span>{a.displayName}</span>
-                              {a.llmGrade?.status === "graded" && (
-                                <Badge
-                                  variant="secondary"
-                                  className="px-1 py-0 text-[10px]"
-                                >
-                                  LLM
-                                </Badge>
-                              )}
                             </div>
                           </td>
-                          <td className="py-1.5 pr-4 font-mono tabular-nums">
-                            {a.testsPassed}/{a.testsTotal}
+                          <td className="py-1.5 pr-4">
+                            <div className="flex flex-col gap-0.5">
+                              <span className="font-mono tabular-nums">
+                                {a.testsPassed}/{a.testsTotal}
+                              </span>
+                              {hasWritten && (
+                                <span className="flex items-center gap-1 text-muted-foreground font-mono tabular-nums">
+                                  <PenLine className="size-2.5" />
+                                  {a.llmGrade!.pointsEarned}/{a.llmGrade!.pointsPossible} written
+                                </span>
+                              )}
+                            </div>
                           </td>
                           <td className="py-1.5 pr-4">
                             <div className="flex items-center gap-2">
@@ -206,6 +214,15 @@ export function ExpandedRow({
                         </tr>
                         {isAssignmentOpen && a.testResults && (
                           <TestResultRows tests={a.testResults} />
+                        )}
+                        {isAssignmentOpen && hasFeedback && (
+                          <tr className="border-t border-border/20 bg-muted/10">
+                            <td colSpan={5} className="py-2 px-9">
+                              <div className="text-[11px] font-mono whitespace-pre-wrap text-muted-foreground leading-relaxed">
+                                {a.llmGrade!.feedback}
+                              </div>
+                            </td>
+                          </tr>
                         )}
                       </React.Fragment>
                     );
