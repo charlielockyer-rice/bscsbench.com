@@ -55,7 +55,7 @@ export interface ArchiveWorkspace {
   num_turns: number;
   session_id: string;
   model_id: string;
-  grade: ArchiveWorkspaceGrade;
+  grade: ArchiveWorkspaceGrade | null;
   grade_summary: string;
   llm_grade?: ArchiveLlmGrade;
   test_results?: ArchiveTestResult[];

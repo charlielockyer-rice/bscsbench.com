@@ -31,7 +31,7 @@ function MiniCourseBars({
     <div className="flex items-end gap-0.5 h-8">
       {courseIds.map((id) => {
         const course = entry.courses[id];
-        const rate = course?.passRate ?? 0;
+        const rate = course?.grade ?? 0;
         const heightPx = Math.max(2, Math.round((rate / 100) * 32));
         return (
           <div

@@ -122,11 +122,11 @@ export function ExpandedRow({
                   <td className="py-2 pr-4">
                     <div className="flex items-center gap-2">
                       <PassRateBar
-                        rate={courseData.passRate}
+                        rate={courseData.grade}
                         className="w-16"
                       />
                       <span className="font-mono tabular-nums text-xs">
-                        {formatPercent(courseData.passRate)}
+                        {formatPercent(courseData.grade)}
                       </span>
                     </div>
                   </td>
