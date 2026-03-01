@@ -59,9 +59,14 @@ function extractFromTrace(tracePath) {
         const cleanPath = stripPaths(filePath).replace(/^\.\//, "");
         const content = stripLineNumbers(stripPaths(output));
 
-        // Instructions file
-        if (cleanPath.includes("instructions") && !instructions) {
-          instructions = content;
+        // Instructions file — concatenate chunked reads, skip errors
+        if (cleanPath.includes("instructions")) {
+          if (content.includes("exceeds maximum") || content.includes("tool_use_error")) continue;
+          if (!instructions) {
+            instructions = content;
+          } else {
+            instructions += "\n" + content;
+          }
           continue;
         }
 
