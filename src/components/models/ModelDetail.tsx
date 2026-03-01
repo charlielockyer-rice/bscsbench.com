@@ -1,18 +1,15 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   ChevronRight,
-  Check,
-  X,
   DollarSign,
   Clock,
   FlaskConical,
   Cpu,
-  ScrollText,
 } from "lucide-react";
-import Link from "next/link";
-import type { BenchmarkEntry, CourseInfo, TestResult } from "@/lib/types";
+import type { BenchmarkEntry, CourseInfo } from "@/lib/types";
 import {
   formatCost,
   formatTime,
@@ -20,64 +17,10 @@ import {
   formatTokens,
   formatGpa,
 } from "@/lib/formatting";
-import { PassRateBar, rateColor } from "@/components/leaderboard/PassRateBar";
+import { PassRateBar } from "@/components/leaderboard/PassRateBar";
 import { Badge } from "@/components/ui/badge";
 import { StatCard } from "@/components/ui/StatCard";
 import { cn } from "@/lib/utils";
-
-function TestResultRows({ tests }: { tests: TestResult[] }) {
-  return (
-    <>
-      {tests.map((t) => (
-        <tr
-          key={t.name}
-          className="border-t border-border/20 bg-muted/10 text-[11px]"
-        >
-          <td className="py-1.5 pr-4 pl-14" colSpan={4}>
-            <div className="flex items-center gap-1.5">
-              {t.status === "pass" ? (
-                <Check className="size-3 text-[oklch(0.72_0.19_142)]" />
-              ) : (
-                <X className="size-3 text-[oklch(0.63_0.21_25)]" />
-              )}
-              <span className="font-mono">{t.name}</span>
-              {t.inputDescription && (
-                <span className="text-muted-foreground ml-1">
-                  ({t.inputDescription})
-                </span>
-              )}
-            </div>
-            {t.status === "fail" && t.errorMessage && (
-              <div className="mt-0.5 pl-[18px] text-[oklch(0.63_0.21_25)] font-mono break-all">
-                {t.errorMessage}
-              </div>
-            )}
-            {t.status === "fail" && t.expected != null && (
-              <div className="mt-0.5 pl-[18px] font-mono break-all text-[11px]">
-                <span className="text-[oklch(0.72_0.19_142)]">expected: </span>
-                <span className="text-muted-foreground">{t.expected}</span>
-              </div>
-            )}
-            {t.status === "fail" && t.actual != null && (
-              <div className="mt-0.5 pl-[18px] font-mono break-all text-[11px]">
-                <span className="text-[oklch(0.63_0.21_25)]">actual: </span>
-                <span className="text-muted-foreground">{t.actual}</span>
-              </div>
-            )}
-          </td>
-          <td className="py-1.5 pr-4 text-right font-mono tabular-nums text-muted-foreground">
-            {t.pointsEarned}/{t.pointsPossible}
-          </td>
-          <td className="py-1.5 text-right font-mono tabular-nums text-muted-foreground">
-            {t.executionTimeMs < 1
-              ? `${t.executionTimeMs.toFixed(3)}ms`
-              : `${t.executionTimeMs.toFixed(1)}ms`}
-          </td>
-        </tr>
-      ))}
-    </>
-  );
-}
 
 export function ModelDetail({
   entry,
@@ -86,10 +29,8 @@ export function ModelDetail({
   entry: BenchmarkEntry;
   courses: Record<string, CourseInfo>;
 }) {
+  const router = useRouter();
   const [expandedCourse, setExpandedCourse] = useState<string | null>(null);
-  const [expandedAssignment, setExpandedAssignment] = useState<string | null>(
-    null
-  );
 
   const courseEntries = Object.entries(entry.courses).sort(([a], [b]) =>
     a.localeCompare(b)
@@ -213,10 +154,9 @@ export function ModelDetail({
                   <React.Fragment key={courseId}>
                     <tr
                       className="cursor-pointer border-t border-border/50 hover:bg-muted/30"
-                      onClick={() => {
-                        setExpandedCourse(isOpen ? null : courseId);
-                        setExpandedAssignment(null);
-                      }}
+                      onClick={() =>
+                        setExpandedCourse(isOpen ? null : courseId)
+                      }
                     >
                       <td className="p-3 pr-4">
                         <div className="flex items-center gap-2">
@@ -290,45 +230,21 @@ export function ModelDetail({
                     </tr>
                     {isOpen &&
                       courseData.assignments.map((a) => {
-                        const hasTests =
-                          a.testResults && a.testResults.length > 0;
                         const hasWritten =
                           a.llmGrade?.status === "graded" &&
                           a.llmGrade.pointsEarned != null;
-                        const hasFeedback =
-                          hasWritten && !!a.llmGrade!.feedback;
-                        const isExpandable = hasTests || hasFeedback;
-                        const isAssignmentOpen = expandedAssignment === a.id;
 
                         return (
-                          <React.Fragment key={a.id}>
-                            <tr
-                              className={cn(
-                                "border-t border-border/30 bg-muted/20 text-xs",
-                                isExpandable &&
-                                  "cursor-pointer hover:bg-muted/30"
-                              )}
-                              onClick={
-                                isExpandable
-                                  ? (e) => {
-                                      e.stopPropagation();
-                                      setExpandedAssignment(
-                                        isAssignmentOpen ? null : a.id
-                                      );
-                                    }
-                                  : undefined
-                              }
-                            >
+                          <tr
+                            key={a.id}
+                            className="border-t border-border/30 bg-muted/20 text-xs cursor-pointer hover:bg-muted/30"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              router.push(`/work/${a.id}`);
+                            }}
+                          >
                               <td className="py-2 pr-4 pl-10">
                                 <div className="flex items-center gap-1.5 flex-wrap">
-                                  {isExpandable && (
-                                    <ChevronRight
-                                      className={cn(
-                                        "size-3 text-muted-foreground transition-transform",
-                                        isAssignmentOpen && "rotate-90"
-                                      )}
-                                    />
-                                  )}
                                   <span>{a.displayName}</span>
                                   {a.weight > 1 && (
                                     <Badge variant="outline" className="px-1 py-0 text-[9px] font-mono">
@@ -340,14 +256,6 @@ export function ModelDetail({
                                       timeout
                                     </Badge>
                                   )}
-                                  <Link
-                                    href={`/work/${a.id}`}
-                                    onClick={(e) => e.stopPropagation()}
-                                    className="text-[10px] text-muted-foreground hover:text-foreground ml-1"
-                                    title="View agent trace"
-                                  >
-                                    <ScrollText className="size-3" />
-                                  </Link>
                                   <span className="text-[10px] text-muted-foreground font-mono ml-1">
                                     {formatTokens(a.tokens)} tokens · {a.steps} turns
                                   </span>
@@ -384,20 +292,7 @@ export function ModelDetail({
                               <td className="py-2 px-3 text-right font-mono tabular-nums">
                                 {formatTime(a.timeSeconds)}
                               </td>
-                            </tr>
-                            {isAssignmentOpen && a.testResults && (
-                              <TestResultRows tests={a.testResults} />
-                            )}
-                            {isAssignmentOpen && hasFeedback && (
-                              <tr className="border-t border-border/20 bg-muted/10">
-                                <td colSpan={6} className="py-2 px-10">
-                                  <div className="text-[11px] font-mono whitespace-pre-wrap text-muted-foreground leading-relaxed">
-                                    {a.llmGrade!.feedback}
-                                  </div>
-                                </td>
-                              </tr>
-                            )}
-                          </React.Fragment>
+                          </tr>
                         );
                       })}
                   </React.Fragment>

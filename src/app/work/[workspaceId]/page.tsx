@@ -15,6 +15,22 @@ import { TraceViewer } from "@/components/traces/TraceViewer";
 import { StatsCards } from "@/components/work/StatsCards";
 import { ModelUsageTable } from "@/components/work/ModelUsageTable";
 import { WorkTabs } from "@/components/work/WorkTabs";
+import { renderMarkdownLite } from "@/components/traces/markdown-lite";
+
+interface AssignmentData {
+  assignmentBase: string;
+  instructions: string;
+  providedFiles: { path: string; filename: string; content: string }[];
+}
+
+const WRITEUP_LANGS = new Set(["markdown", "text", "plaintext", "txt", "md"]);
+
+function getAssignmentBase(workspaceId: string): string {
+  return workspaceId
+    .replace(/_opus$/, "")
+    .replace(/_haiku$/, "")
+    .replace(/_sonnet$/, "");
+}
 
 export default async function WorkPage({
   params,
@@ -53,11 +69,23 @@ export default async function WorkPage({
     agentMeta = JSON.parse(readFileSync(agentMetaPath, "utf-8")) as AgentMeta;
   }
 
+  const assignmentBase = getAssignmentBase(workspaceId);
+  const assignmentPath = join(process.cwd(), "public", "assignments", assignmentBase + ".json");
+  let assignmentData: AssignmentData | null = null;
+  if (existsSync(assignmentPath)) {
+    assignmentData = JSON.parse(readFileSync(assignmentPath, "utf-8")) as AssignmentData;
+  }
+
   const assignment = context.assignment;
 
-  const highlightedFiles = solution
+  // Separate code files from writeup-only files
+  const codeFiles = solution?.files.filter(
+    (f) => !WRITEUP_LANGS.has(f.language.toLowerCase())
+  ) ?? [];
+
+  const highlightedFiles = codeFiles.length > 0
     ? await Promise.all(
-        solution.files.map(async (file) => ({
+        codeFiles.map(async (file) => ({
           path: file.path,
           filename: file.filename,
           language: file.language,
@@ -71,6 +99,30 @@ export default async function WorkPage({
   const highlightedDiff = solution?.diff
     ? await highlightCode(solution.diff, "diff")
     : null;
+
+  // Highlight provided files
+  const highlightedProvided = assignmentData?.providedFiles.length
+    ? await Promise.all(
+        assignmentData.providedFiles.map(async (file) => {
+          const ext = file.filename.split(".").pop() ?? "";
+          const langMap: Record<string, string> = {
+            py: "python",
+            java: "java",
+            c: "c",
+            h: "c",
+          };
+          const lang = file.filename === "Makefile" ? "makefile" : (langMap[ext] ?? "text");
+          return {
+            path: file.path,
+            filename: file.filename,
+            language: lang,
+            highlightedHtml: await highlightCode(file.content, lang),
+            sizeBytes: Buffer.byteLength(file.content, "utf-8"),
+            truncated: false,
+          };
+        })
+      )
+    : [];
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
@@ -93,6 +145,24 @@ export default async function WorkPage({
 
       <WorkTabs
         tabs={[
+          {
+            id: "instructions",
+            label: "Instructions",
+            disabled: !assignmentData?.instructions,
+            content: assignmentData?.instructions ? (
+              <div className="text-sm leading-relaxed space-y-2">
+                {renderMarkdownLite(assignmentData.instructions)}
+              </div>
+            ) : null,
+          },
+          {
+            id: "provided",
+            label: "Provided Files",
+            disabled: !highlightedProvided.length,
+            content: highlightedProvided.length > 0 ? (
+              <SolutionViewer files={highlightedProvided} />
+            ) : null,
+          },
           {
             id: "solution",
             label: "Solution",
