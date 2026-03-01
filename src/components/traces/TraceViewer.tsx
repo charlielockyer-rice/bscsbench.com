@@ -2,22 +2,17 @@
 
 import { useEffect, useState } from "react";
 import {
-  Clock,
-  DollarSign,
   RotateCcw,
   CheckCircle2,
   XCircle,
 } from "lucide-react";
 import type { ProcessedTrace } from "@/lib/trace-types";
-import { formatCost, formatTime } from "@/lib/formatting";
 import { TraceTurn } from "./TraceTurn";
 
 export function TraceViewer({
   workspaceId,
-  modelName,
 }: {
   workspaceId: string;
-  modelName: string;
 }) {
   const [trace, setTrace] = useState<ProcessedTrace | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -76,50 +71,6 @@ export function TraceViewer({
           </div>
         </div>
       )}
-
-      {/* Stat cards */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <div className="rounded-lg border bg-card p-4">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Clock className="size-4" />
-            Duration
-          </div>
-          <div className="mt-1 text-2xl font-bold font-mono tabular-nums">
-            {formatTime(trace.summary.durationMs / 1000)}
-          </div>
-        </div>
-        <div className="rounded-lg border bg-card p-4">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <RotateCcw className="size-4" />
-            Turns
-          </div>
-          <div className="mt-1 text-2xl font-bold font-mono tabular-nums">
-            {trace.summary.numTurns}
-          </div>
-        </div>
-        <div className="rounded-lg border bg-card p-4">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <DollarSign className="size-4" />
-            Cost
-          </div>
-          <div className="mt-1 text-2xl font-bold font-mono tabular-nums">
-            {formatCost(trace.summary.totalCostUsd)}
-          </div>
-        </div>
-        <div className="rounded-lg border bg-card p-4">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            {trace.summary.isError ? (
-              <XCircle className="size-4" />
-            ) : (
-              <CheckCircle2 className="size-4" />
-            )}
-            Status
-          </div>
-          <div className="mt-1 text-2xl font-bold font-mono tabular-nums">
-            {trace.summary.isError ? "Error" : "Success"}
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

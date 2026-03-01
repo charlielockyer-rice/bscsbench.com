@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "extract-traces": "node scripts/extract-traces.mjs"
+    "extract-traces": "node scripts/extract-traces.mjs",
+    "extract-solutions": "node scripts/extract-solutions.mjs"
   },
   "dependencies": {
     "@mdx-js/loader": "^3.1.1",
@@ -20,6 +21,7 @@
     "radix-ui": "^1.4.3",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "shiki": "^4.0.0",
     "tailwind-merge": "^3.5.0"
   },
   "devDependencies": {

@@ -22,29 +22,8 @@ import {
 } from "@/lib/formatting";
 import { PassRateBar, rateColor } from "@/components/leaderboard/PassRateBar";
 import { Badge } from "@/components/ui/badge";
+import { StatCard } from "@/components/ui/StatCard";
 import { cn } from "@/lib/utils";
-
-function StatCard({
-  icon: Icon,
-  label,
-  value,
-}: {
-  icon: React.ElementType;
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="rounded-lg border bg-card p-4">
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Icon className="size-4" />
-        {label}
-      </div>
-      <div className="mt-1 text-2xl font-bold font-mono tabular-nums">
-        {value}
-      </div>
-    </div>
-  );
-}
 
 function TestResultRows({ tests }: { tests: TestResult[] }) {
   return (
@@ -320,7 +299,7 @@ export function ModelDetail({
                                   )}
                                   <span>{a.displayName}</span>
                                   <Link
-                                    href={`/traces/${a.id}`}
+                                    href={`/work/${a.id}`}
                                     onClick={(e) => e.stopPropagation()}
                                     className="text-[10px] text-muted-foreground hover:text-foreground ml-1"
                                     title="View agent trace"

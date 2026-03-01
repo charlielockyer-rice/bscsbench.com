@@ -39,6 +39,9 @@ yarn-error.log*
 # generated traces
 /public/traces/
 
+# generated solutions
+/public/solutions/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
