@@ -148,6 +148,9 @@ export interface AssignmentResult {
   timeSeconds: number;
   tokens: number;
   steps: number;
+  isTimeout: boolean;
+  durationApiMs: number;
+  weight: number;
   llmGrade?: {
     status: string;
     pointsEarned?: number;
@@ -161,6 +164,7 @@ export interface CourseResult {
   courseId: string;
   grade: number; // 0-100
   letter: string;
+  creditHours: number;
   testsPassed: number;
   testsTotal: number;
   passRate: number; // 0-100

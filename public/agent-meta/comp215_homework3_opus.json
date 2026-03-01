@@ -1,0 +1,1 @@
+{"workspaceId":"comp215_homework3_opus","modelUsage":[{"model":"claude-opus-4-6","inputTokens":28,"outputTokens":15032,"cacheReadTokens":1908165,"costUsd":1.8358975000000004},{"model":"claude-haiku-4-5-20251001","inputTokens":10561,"outputTokens":10023,"cacheReadTokens":2319586,"costUsd":0.37982085000000004}],"claudeCodeVersion":"2.1.62","rateLimitEvents":0}

@@ -1,0 +1,1 @@
+{"workspaceId":"comp341_hw4_opus","modelUsage":[{"model":"claude-opus-4-6","inputTokens":29,"outputTokens":52989,"cacheReadTokens":2016408,"costUsd":2.9436177500000005},{"model":"claude-haiku-4-5-20251001","inputTokens":15410,"outputTokens":3840,"cacheReadTokens":185589,"costUsd":0.10603514999999997}],"claudeCodeVersion":"2.1.62","rateLimitEvents":0}

@@ -1,0 +1,1 @@
+{"workspaceId":"comp321_malloc","modelUsage":[{"model":"claude-sonnet-4-6","inputTokens":26,"outputTokens":74465,"cacheReadTokens":1547629,"costUsd":3.069857},{"model":"claude-haiku-4-5-20251001","inputTokens":5689,"outputTokens":293,"cacheReadTokens":0,"costUsd":0.007154}],"claudeCodeVersion":"2.1.62","rateLimitEvents":0}

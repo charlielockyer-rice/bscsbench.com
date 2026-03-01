@@ -2,7 +2,8 @@ import React from "react";
 
 /**
  * Lightweight markdown renderer — no external deps.
- * Handles code fences, inline code, bold, headers, lists, and paragraph breaks.
+ * Handles code fences, inline code, bold, headers (h1-h6), lists, tables,
+ * and paragraph breaks.
  */
 export function renderMarkdownLite(text: string): React.ReactNode[] {
   const blocks: React.ReactNode[] = [];
@@ -33,19 +34,75 @@ export function renderMarkdownLite(text: string): React.ReactNode[] {
       continue;
     }
 
-    // Headers
-    const headerMatch = line.match(/^(#{1,3})\s+(.+)/);
+    // Headers (h1-h6)
+    const headerMatch = line.match(/^(#{1,6})\s+(.+)/);
     if (headerMatch) {
-      const level = headerMatch[1].length;
-      const Tag = `h${level + 1}` as "h2" | "h3" | "h4";
-      const sizes = { h2: "text-lg font-bold", h3: "text-base font-semibold", h4: "text-sm font-semibold" };
+      const level = Math.min(headerMatch[1].length, 6);
+      const Tag = `h${level}` as keyof React.JSX.IntrinsicElements;
+      const sizes: Record<string, string> = {
+        h1: "text-xl font-bold",
+        h2: "text-lg font-bold",
+        h3: "text-base font-semibold",
+        h4: "text-sm font-semibold",
+        h5: "text-sm font-medium",
+        h6: "text-xs font-medium uppercase tracking-wider",
+      };
       blocks.push(
-        <Tag key={blocks.length} className={`${sizes[Tag]} mt-3 mb-1`}>
+        <Tag key={blocks.length} className={`${sizes[`h${level}`]} mt-3 mb-1`}>
           {renderInline(headerMatch[2])}
         </Tag>
       );
       i++;
       continue;
+    }
+
+    // Tables — detect pipe-delimited rows
+    if (line.includes("|") && line.trim().startsWith("|")) {
+      const tableLines: string[] = [];
+      while (i < lines.length && lines[i].includes("|") && lines[i].trim().startsWith("|")) {
+        tableLines.push(lines[i]);
+        i++;
+      }
+      if (tableLines.length >= 2) {
+        const parseRow = (row: string) =>
+          row.split("|").slice(1, -1).map((cell) => cell.trim());
+
+        const headerCells = parseRow(tableLines[0]);
+        // Skip separator row (e.g., |---|---|)
+        const isSeparator = (row: string) =>
+          /^\|[\s\-:|]+\|$/.test(row.trim()) &&
+          row.trim().split("|").slice(1, -1).every((cell) => /^[\s\-:]+$/.test(cell));
+        const dataStart = isSeparator(tableLines[1]) ? 2 : 1;
+        const bodyRows = tableLines.slice(dataStart).map(parseRow);
+
+        blocks.push(
+          <div key={blocks.length} className="my-2 overflow-x-auto rounded-lg border">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b bg-muted/30">
+                  {headerCells.map((cell, j) => (
+                    <th key={j} className="px-3 py-2 text-left font-medium">
+                      {renderInline(cell)}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {bodyRows.map((row, j) => (
+                  <tr key={j} className="border-t border-border/50">
+                    {row.map((cell, k) => (
+                      <td key={k} className="px-3 py-2">
+                        {renderInline(cell)}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        );
+        continue;
+      }
     }
 
     // List items
@@ -77,8 +134,9 @@ export function renderMarkdownLite(text: string): React.ReactNode[] {
       i < lines.length &&
       lines[i].trim() !== "" &&
       !lines[i].startsWith("```") &&
-      !lines[i].match(/^#{1,3}\s+/) &&
-      !lines[i].match(/^[-*]\s+/)
+      !lines[i].match(/^#{1,6}\s+/) &&
+      !lines[i].match(/^[-*]\s+/) &&
+      !(lines[i].includes("|") && lines[i].trim().startsWith("|"))
     ) {
       paraLines.push(lines[i]);
       i++;

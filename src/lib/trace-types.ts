@@ -3,6 +3,7 @@ export interface TraceMetadata {
   model: string;
   sessionId: string;
   tools: string[];
+  claudeCodeVersion: string;
 }
 
 export interface TraceSummary {
@@ -11,6 +12,7 @@ export interface TraceSummary {
   totalCostUsd: number;
   isError: boolean;
   resultText: string;
+  rateLimitEvents: number;
 }
 
 export interface ToolCall {

@@ -63,13 +63,14 @@ function processTrace(raw) {
     .split("\n")
     .map((l) => JSON.parse(l));
 
-  let metadata = { workspaceId: "", model: "", sessionId: "", tools: [] };
+  let metadata = { workspaceId: "", model: "", sessionId: "", claudeCodeVersion: "", tools: [] };
   let summary = {
     durationMs: 0,
     numTurns: 0,
     totalCostUsd: 0,
     isError: false,
     resultText: "",
+    rateLimitEvents: 0,
   };
 
   // Collect assistant content blocks grouped by message.id
@@ -79,11 +80,19 @@ function processTrace(raw) {
   // Collect tool results by tool_use_id
   const toolResults = new Map();
 
+  let rateLimitEvents = 0;
+
   for (const event of lines) {
     if (event.type === "system" && event.subtype === "init") {
       metadata.model = event.model || "";
       metadata.sessionId = event.session_id || "";
+      metadata.claudeCodeVersion = event.claude_code_version || "";
       metadata.tools = event.tools || [];
+      continue;
+    }
+
+    if (event.type === "system" && event.subtype === "rate_limit_event") {
+      rateLimitEvents++;
       continue;
     }
 
@@ -171,6 +180,8 @@ function processTrace(raw) {
       turnIndex++;
     }
   }
+
+  summary.rateLimitEvents = rateLimitEvents;
 
   return { metadata, turns, summary };
 }

@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "extract-traces": "node scripts/extract-traces.mjs",
-    "extract-solutions": "node scripts/extract-solutions.mjs"
+    "extract-solutions": "node scripts/extract-solutions.mjs",
+    "extract-agent-meta": "node scripts/extract-agent-meta.mjs"
   },
   "dependencies": {
     "@mdx-js/loader": "^3.1.1",

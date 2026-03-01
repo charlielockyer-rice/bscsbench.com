@@ -6,13 +6,15 @@ import { ArrowLeft } from "lucide-react";
 import { getEntryByWorkspaceId } from "@/lib/data";
 import { highlightCode } from "@/lib/shiki";
 import type { SolutionData } from "@/lib/solution-types";
-import type { ProcessedTrace, TraceSummary } from "@/lib/trace-types";
-import { SectionNav } from "@/components/work/SectionNav";
+import type { ProcessedTrace, TraceSummary, TraceMetadata } from "@/lib/trace-types";
+import type { AgentMeta } from "@/lib/agent-meta-types";
 import { SolutionViewer } from "@/components/work/SolutionViewer";
 import { WriteupSection } from "@/components/work/WriteupSection";
 import { GraderReview } from "@/components/work/GraderReview";
 import { TraceViewer } from "@/components/traces/TraceViewer";
 import { StatsCards } from "@/components/work/StatsCards";
+import { ModelUsageTable } from "@/components/work/ModelUsageTable";
+import { WorkTabs } from "@/components/work/WorkTabs";
 
 export default async function WorkPage({
   params,
@@ -38,10 +40,20 @@ export default async function WorkPage({
 
   const tracePath = join(process.cwd(), "public", "traces", workspaceId + ".json");
   let traceSummary: TraceSummary | null = null;
+  let traceMetadata: TraceMetadata | null = null;
   if (existsSync(tracePath)) {
     const trace = JSON.parse(readFileSync(tracePath, "utf-8")) as ProcessedTrace;
     traceSummary = trace.summary;
+    traceMetadata = trace.metadata;
   }
+
+  const agentMetaPath = join(process.cwd(), "public", "agent-meta", workspaceId + ".json");
+  let agentMeta: AgentMeta | null = null;
+  if (existsSync(agentMetaPath)) {
+    agentMeta = JSON.parse(readFileSync(agentMetaPath, "utf-8")) as AgentMeta;
+  }
+
+  const assignment = context.assignment;
 
   const highlightedFiles = solution
     ? await Promise.all(
@@ -55,6 +67,10 @@ export default async function WorkPage({
         }))
       )
     : [];
+
+  const highlightedDiff = solution?.diff
+    ? await highlightCode(solution.diff, "diff")
+    : null;
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
@@ -75,80 +91,70 @@ export default async function WorkPage({
         </p>
       </div>
 
-      <SectionNav
-        sections={[
-          { id: "solution", label: "Solution" },
-          { id: "writeup", label: "Writeup" },
-          { id: "trace", label: "Agent Trace" },
-          { id: "review", label: "Review" },
-          { id: "stats", label: "Stats" },
+      <WorkTabs
+        tabs={[
+          {
+            id: "solution",
+            label: "Solution",
+            disabled: !highlightedFiles.length,
+            content: highlightedFiles.length > 0 ? (
+              <SolutionViewer files={highlightedFiles} />
+            ) : null,
+          },
+          {
+            id: "diff",
+            label: "Diff",
+            disabled: !highlightedDiff,
+            content: highlightedDiff ? (
+              <div className="diff-viewer rounded-lg border bg-card overflow-x-auto">
+                <div
+                  className="text-sm [&_pre]:!bg-transparent [&_pre]:!py-3 [&_code]:text-xs"
+                  dangerouslySetInnerHTML={{ __html: highlightedDiff }}
+                />
+              </div>
+            ) : null,
+          },
+          {
+            id: "writeup",
+            label: "Writeup",
+            disabled: !solution?.writeup,
+            content: <WriteupSection writeup={solution?.writeup ?? null} />,
+          },
+          {
+            id: "trace",
+            label: "Agent Trace",
+            content: <TraceViewer workspaceId={workspaceId} />,
+          },
+          {
+            id: "review",
+            label: "Review",
+            disabled: !solution?.graderReview,
+            content: <GraderReview graderReview={solution?.graderReview ?? null} />,
+          },
+          {
+            id: "stats",
+            label: "Stats",
+            content: (
+              <div className="space-y-4">
+                <StatsCards
+                  summary={traceSummary}
+                  assignment={assignment}
+                  agentMeta={agentMeta}
+                  traceMetadata={traceMetadata}
+                />
+                {agentMeta && agentMeta.modelUsage.length > 0 && (
+                  <div className="mt-4">
+                    <h3 className="text-sm font-semibold tracking-tight mb-2">
+                      Sub-Model Usage
+                    </h3>
+                    <ModelUsageTable usage={agentMeta.modelUsage} />
+                  </div>
+                )}
+              </div>
+            ),
+          },
         ]}
       />
-
-      {solution ? (
-        <>
-          <section id="solution" className="space-y-4 pt-8 scroll-mt-16">
-            <h2 className="text-lg font-semibold tracking-tight mb-4">
-              Solution Code
-            </h2>
-            {highlightedFiles.length > 0 ? (
-              <SolutionViewer files={highlightedFiles} />
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                No solution files
-              </p>
-            )}
-          </section>
-
-          <section id="writeup" className="space-y-4 pt-8 scroll-mt-16">
-            <h2 className="text-lg font-semibold tracking-tight mb-4">
-              Writeup
-            </h2>
-            <WriteupSection writeup={solution.writeup} />
-          </section>
-        </>
-      ) : (
-        <>
-          <section id="solution" className="space-y-4 pt-8 scroll-mt-16">
-            <h2 className="text-lg font-semibold tracking-tight mb-4">
-              Solution Code
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              No solution data available
-            </p>
-          </section>
-
-          <section id="writeup" className="space-y-4 pt-8 scroll-mt-16">
-            <h2 className="text-lg font-semibold tracking-tight mb-4">
-              Writeup
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              No solution data available
-            </p>
-          </section>
-        </>
-      )}
-
-      <section id="trace" className="space-y-4 pt-8 scroll-mt-16">
-        <h2 className="text-lg font-semibold tracking-tight mb-4">
-          Agent Trace
-        </h2>
-        <TraceViewer workspaceId={workspaceId} />
-      </section>
-
-      <section id="review" className="space-y-4 pt-8 scroll-mt-16">
-        <h2 className="text-lg font-semibold tracking-tight mb-4">
-          Grader Review
-        </h2>
-        <GraderReview graderReview={solution?.graderReview ?? null} />
-      </section>
-
-      <section id="stats" className="space-y-4 pt-8 scroll-mt-16">
-        <h2 className="text-lg font-semibold tracking-tight mb-4">
-          Stats
-        </h2>
-        <StatsCards summary={traceSummary} />
-      </section>
     </div>
   );
 }

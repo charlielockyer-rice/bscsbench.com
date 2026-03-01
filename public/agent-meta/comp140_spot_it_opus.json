@@ -1,0 +1,1 @@
+{"workspaceId":"comp140_spot_it_opus","modelUsage":[{"model":"claude-opus-4-6","inputTokens":10,"outputTokens":2508,"cacheReadTokens":286637,"costUsd":0.31077474999999993},{"model":"claude-haiku-4-5-20251001","inputTokens":792,"outputTokens":32,"cacheReadTokens":0,"costUsd":0.0009519999999999999}],"claudeCodeVersion":"2.1.62","rateLimitEvents":0}

@@ -52,6 +52,18 @@ function TestResultRows({ tests }: { tests: TestResult[] }) {
                 {t.errorMessage}
               </div>
             )}
+            {t.status === "fail" && t.expected != null && (
+              <div className="mt-0.5 pl-[18px] font-mono break-all text-[11px]">
+                <span className="text-[oklch(0.72_0.19_142)]">expected: </span>
+                <span className="text-muted-foreground">{t.expected}</span>
+              </div>
+            )}
+            {t.status === "fail" && t.actual != null && (
+              <div className="mt-0.5 pl-[18px] font-mono break-all text-[11px]">
+                <span className="text-[oklch(0.63_0.21_25)]">actual: </span>
+                <span className="text-muted-foreground">{t.actual}</span>
+              </div>
+            )}
           </td>
           <td className="py-1.5 pr-4 text-right font-mono tabular-nums text-muted-foreground">
             {t.pointsEarned}/{t.pointsPossible}
@@ -88,6 +100,8 @@ export function ModelDetail({
     entry.totals.outputTokens +
     entry.totals.cacheCreationTokens +
     entry.totals.cacheReadTokens;
+
+  const timeoutCount = Object.values(entry.courses).flatMap(c => c.assignments).filter(a => a.isTimeout).length;
 
   return (
     <div className="space-y-8">
@@ -137,7 +151,7 @@ export function ModelDetail({
       </div>
 
       {/* Stat cards */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
         <StatCard
           icon={DollarSign}
           label="Total Cost"
@@ -147,6 +161,9 @@ export function ModelDetail({
           icon={Clock}
           label="Total Time"
           value={formatTime(entry.totals.durationMs / 1000)}
+          sublabel={entry.totals.durationMs > 0
+            ? `${Math.round((entry.totals.durationApiMs / entry.totals.durationMs) * 100)}% API`
+            : undefined}
         />
         <StatCard
           icon={FlaskConical}
@@ -158,7 +175,17 @@ export function ModelDetail({
           label="Total Tokens"
           value={formatTokens(totalTokens)}
         />
+        <StatCard
+          icon={Clock}
+          label="API Time"
+          value={formatTime(entry.totals.durationApiMs / 1000)}
+        />
       </div>
+      {timeoutCount > 0 && (
+        <div className="text-sm text-[oklch(0.75_0.15_75)]">
+          {timeoutCount} assignment{timeoutCount > 1 ? "s" : ""} timed out
+        </div>
+      )}
 
       {/* Course breakdown */}
       <section>
@@ -211,6 +238,11 @@ export function ModelDetail({
                               className="px-1.5 py-0 text-[10px] font-mono"
                             >
                               {courseData.letter}
+                            </Badge>
+                          )}
+                          {courseData.creditHours > 0 && (
+                            <Badge variant="outline" className="px-1 py-0 text-[9px] font-mono text-muted-foreground">
+                              {courseData.creditHours}cr
                             </Badge>
                           )}
                         </div>
@@ -288,7 +320,7 @@ export function ModelDetail({
                               }
                             >
                               <td className="py-2 pr-4 pl-10">
-                                <div className="flex items-center gap-1.5">
+                                <div className="flex items-center gap-1.5 flex-wrap">
                                   {isExpandable && (
                                     <ChevronRight
                                       className={cn(
@@ -298,6 +330,16 @@ export function ModelDetail({
                                     />
                                   )}
                                   <span>{a.displayName}</span>
+                                  {a.weight > 1 && (
+                                    <Badge variant="outline" className="px-1 py-0 text-[9px] font-mono">
+                                      {a.weight}x
+                                    </Badge>
+                                  )}
+                                  {a.isTimeout && (
+                                    <Badge variant="outline" className="px-1 py-0 text-[9px] font-mono text-[oklch(0.75_0.15_75)]">
+                                      timeout
+                                    </Badge>
+                                  )}
                                   <Link
                                     href={`/work/${a.id}`}
                                     onClick={(e) => e.stopPropagation()}
@@ -306,6 +348,9 @@ export function ModelDetail({
                                   >
                                     <ScrollText className="size-3" />
                                   </Link>
+                                  <span className="text-[10px] text-muted-foreground font-mono ml-1">
+                                    {formatTokens(a.tokens)} tokens · {a.steps} turns
+                                  </span>
                                 </div>
                               </td>
                               <td className="py-2 pl-3 pr-4 font-mono tabular-nums">

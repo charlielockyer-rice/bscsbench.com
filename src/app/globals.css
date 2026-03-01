@@ -124,3 +124,34 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* GitHub-style diff line backgrounds */
+.diff-viewer .line {
+  display: inline-block;
+  width: 100%;
+  padding: 0 16px;
+}
+
+.diff-viewer .line.diff-add {
+  background-color: #dafbe1;
+}
+
+.diff-viewer .line.diff-remove {
+  background-color: #ffebe9;
+}
+
+.diff-viewer .line.diff-header {
+  background-color: #ddf4ff;
+}
+
+.dark .diff-viewer .line.diff-add {
+  background-color: rgba(46, 160, 67, 0.15);
+}
+
+.dark .diff-viewer .line.diff-remove {
+  background-color: rgba(248, 81, 73, 0.15);
+}
+
+.dark .diff-viewer .line.diff-header {
+  background-color: rgba(56, 139, 253, 0.15);
+}

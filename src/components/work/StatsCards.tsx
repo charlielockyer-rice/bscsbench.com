@@ -4,13 +4,31 @@ import {
   RotateCcw,
   CheckCircle2,
   XCircle,
+  AlertTriangle,
+  Cpu,
+  Zap,
+  Tag,
 } from "lucide-react";
-import type { TraceSummary } from "@/lib/trace-types";
-import { formatCost, formatTime } from "@/lib/formatting";
+import type { TraceSummary, TraceMetadata } from "@/lib/trace-types";
+import type { AssignmentResult } from "@/lib/types";
+import type { AgentMeta } from "@/lib/agent-meta-types";
+import { formatCost, formatTime, formatTokens } from "@/lib/formatting";
 import { StatCard } from "@/components/ui/StatCard";
 
-export function StatsCards({ summary }: { summary: TraceSummary | null }) {
+export function StatsCards({
+  summary,
+  assignment,
+  agentMeta,
+  traceMetadata,
+}: {
+  summary: TraceSummary | null;
+  assignment?: AssignmentResult | null;
+  agentMeta?: AgentMeta | null;
+  traceMetadata?: TraceMetadata | null;
+}) {
   if (!summary) return null;
+
+  const isTimeout = assignment?.isTimeout ?? false;
 
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -30,10 +48,38 @@ export function StatsCards({ summary }: { summary: TraceSummary | null }) {
         value={formatCost(summary.totalCostUsd)}
       />
       <StatCard
-        icon={summary.isError ? XCircle : CheckCircle2}
+        icon={isTimeout ? AlertTriangle : summary.isError ? XCircle : CheckCircle2}
         label="Status"
-        value={summary.isError ? "Error" : "Success"}
+        value={isTimeout ? "Timeout" : summary.isError ? "Error" : "Success"}
+        valueClassName={isTimeout ? "text-[oklch(0.75_0.15_75)]" : undefined}
       />
+      {assignment && (
+        <StatCard
+          icon={Clock}
+          label="API Time"
+          value={formatTime(assignment.durationApiMs / 1000)}
+        />
+      )}
+      {assignment && (
+        <StatCard
+          icon={Cpu}
+          label="Tokens"
+          value={formatTokens(assignment.tokens)}
+        />
+      )}
+      {summary.rateLimitEvents > 0 && (
+        <StatCard
+          icon={Zap}
+          label="Rate Limits"
+          value={String(summary.rateLimitEvents)}
+        />
+      )}
+      {(() => {
+        const ccVersion = traceMetadata?.claudeCodeVersion || agentMeta?.claudeCodeVersion;
+        return ccVersion ? (
+          <StatCard icon={Tag} label="Claude Code" value={`v${ccVersion}`} />
+        ) : null;
+      })()}
     </div>
   );
 }

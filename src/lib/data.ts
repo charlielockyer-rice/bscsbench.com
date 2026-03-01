@@ -107,6 +107,10 @@ function transformRun(run: ArchiveRun): BenchmarkEntry {
         timeSeconds: ws.duration_ms / 1000,
         tokens: totalTokens,
         steps: ws.num_turns,
+        // Workspaces with all-zero metrics indicate the agent never ran (timeout before start)
+        isTimeout: ws.duration_ms === 0 && ws.cost_usd === 0 && ws.num_turns === 0,
+        durationApiMs: ws.duration_api_ms,
+        weight: assignmentScore?.weight ?? 1,
         llmGrade: ws.llm_grade
           ? {
               status: ws.llm_grade.status,
@@ -141,6 +145,7 @@ function transformRun(run: ArchiveRun): BenchmarkEntry {
       courseId,
       grade: courseScore?.grade ?? (testsTotal > 0 ? (testsPassed / testsTotal) * 100 : 0),
       letter: courseScore?.letter ?? "",
+      creditHours: courseScore?.credit_hours ?? 3,
       testsPassed,
       testsTotal,
       passRate: testsTotal > 0 ? (testsPassed / testsTotal) * 100 : 0,
@@ -202,7 +207,7 @@ export function getEntryByModelId(modelId: string): BenchmarkEntry | null {
 
 export function getEntryByWorkspaceId(
   workspaceId: string
-): { modelId: string; modelName: string; assignmentName: string } | null {
+): { modelId: string; modelName: string; assignmentName: string; assignment: AssignmentResult } | null {
   const data = getBenchmarkData();
   for (const entry of data.entries) {
     for (const course of Object.values(entry.courses)) {
@@ -212,6 +217,7 @@ export function getEntryByWorkspaceId(
             modelId: entry.model.id,
             modelName: entry.model.name,
             assignmentName: assignment.displayName,
+            assignment,
           };
         }
       }

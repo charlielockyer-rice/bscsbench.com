@@ -54,6 +54,18 @@ function listGradeFiles(archivePath) {
   }
 }
 
+function listDiffFiles(archivePath) {
+  try {
+    const output = execSync(
+      `tar -tzf "${archivePath}" | grep 'solution\\.diff$'`,
+      { encoding: "utf-8" }
+    );
+    return output.trim().split("\n").filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
 function extractFile(archivePath, filePath) {
   return execSync(`tar -xzf "${archivePath}" --to-stdout "${filePath}"`, {
     encoding: "utf-8",
@@ -103,6 +115,7 @@ function main() {
 
     const solutionPaths = listSolutionFiles(archive);
     const gradePaths = listGradeFiles(archive);
+    const diffPaths = listDiffFiles(archive);
 
     // Group by workspaceId
     const workspaces = new Map();
@@ -120,7 +133,7 @@ function main() {
       if (!relativePath) continue;
 
       if (!workspaces.has(workspaceId)) {
-        workspaces.set(workspaceId, { files: [], gradeFile: null });
+        workspaces.set(workspaceId, { files: [], gradeFile: null, diffFile: null });
       }
       workspaces.get(workspaceId).files.push({ archivePath: p, relativePath });
     }
@@ -134,7 +147,20 @@ function main() {
       if (workspaces.has(workspaceId)) {
         workspaces.get(workspaceId).gradeFile = gp;
       } else {
-        workspaces.set(workspaceId, { files: [], gradeFile: gp });
+        workspaces.set(workspaceId, { files: [], gradeFile: gp, diffFile: null });
+      }
+    }
+
+    // Map diff files to workspaces
+    for (const dp of diffPaths) {
+      const parts = dp.split("/");
+      const wsIdx = parts.indexOf("workspaces");
+      if (wsIdx === -1) continue;
+      const workspaceId = parts[wsIdx + 1];
+      if (workspaces.has(workspaceId)) {
+        workspaces.get(workspaceId).diffFile = dp;
+      } else {
+        workspaces.set(workspaceId, { files: [], gradeFile: null, diffFile: dp });
       }
     }
 
@@ -200,7 +226,22 @@ function main() {
           }
         }
 
-        const data = { workspaceId, files, writeup, graderReview };
+        // Extract diff
+        let diff = null;
+        if (ws.diffFile) {
+          try {
+            let content = extractFile(archive, ws.diffFile);
+            content = stripPaths(content);
+            if (content.length > MAX_FILE_SIZE) {
+              content = content.slice(0, MAX_FILE_SIZE) + `\n... (truncated ${content.length - MAX_FILE_SIZE} chars)`;
+            }
+            diff = content;
+          } catch {
+            // Skip
+          }
+        }
+
+        const data = { workspaceId, files, writeup, graderReview, diff };
         writeFileSync(join(OUT_DIR, `${workspaceId}.json`), JSON.stringify(data));
         totalFiles++;
       } catch (err) {

@@ -1,0 +1,1 @@
+{"workspaceId":"comp140_sports_analytics_opus","modelUsage":[{"model":"claude-opus-4-6","inputTokens":28,"outputTokens":8184,"cacheReadTokens":1309791,"costUsd":1.1371417499999998},{"model":"claude-haiku-4-5-20251001","inputTokens":6874,"outputTokens":2628,"cacheReadTokens":109727,"costUsd":0.0676417}],"claudeCodeVersion":"2.1.62","rateLimitEvents":0}

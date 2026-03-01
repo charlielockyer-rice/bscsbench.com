@@ -22,4 +22,5 @@ export interface SolutionData {
   files: SolutionFile[];
   writeup: SolutionWriteup | null;
   graderReview: GraderReviewData | null;
+  diff: string | null;
 }

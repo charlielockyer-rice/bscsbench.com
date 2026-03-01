@@ -75,7 +75,7 @@ export function SolutionViewer({ files }: SolutionViewerProps) {
 
           {/* Desktop: side-by-side */}
           <div className="hidden md:grid grid-cols-[220px_1fr]">
-            <div className="border-r overflow-y-auto max-h-[600px]">
+            <div className="border-r overflow-y-auto">
               <FileTree
                 files={treeFiles}
                 selectedPath={selectedPath}
@@ -113,7 +113,7 @@ function CodePanel({ file }: { file: SolutionFile }) {
       )}
       <div
         className={cn(
-          "overflow-auto max-h-[500px] text-xs",
+          "overflow-x-auto text-xs",
           "[&_pre]:p-4 [&_pre]:m-0 [&_code]:text-xs"
         )}
         dangerouslySetInnerHTML={{ __html: file.highlightedHtml }}

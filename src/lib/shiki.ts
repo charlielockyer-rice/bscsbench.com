@@ -1,4 +1,25 @@
-import { createHighlighter, type Highlighter } from "shiki";
+import { createHighlighter, type Highlighter, type ShikiTransformer } from "shiki";
+
+const SUPPORTED_LANGS = ["python", "java", "c", "markdown", "makefile", "diff"] as const;
+
+function getNodeText(node: Record<string, unknown>): string {
+  if (node.type === "text") return node.value as string;
+  if (Array.isArray(node.children)) return node.children.map(getNodeText).join("");
+  return "";
+}
+
+const diffLineTransformer: ShikiTransformer = {
+  line(node) {
+    const text = getNodeText(node as unknown as Record<string, unknown>);
+    if (text.startsWith("@@")) {
+      this.addClassToHast(node, "diff-header");
+    } else if (text.startsWith("+")) {
+      this.addClassToHast(node, "diff-add");
+    } else if (text.startsWith("-")) {
+      this.addClassToHast(node, "diff-remove");
+    }
+  },
+};
 
 let highlighter: Highlighter | null = null;
 
@@ -6,7 +27,7 @@ export async function getHighlighter(): Promise<Highlighter> {
   if (!highlighter) {
     highlighter = await createHighlighter({
       themes: ["github-dark", "github-light"],
-      langs: ["python", "java", "c", "markdown", "makefile"],
+      langs: [...SUPPORTED_LANGS],
     });
   }
   return highlighter;
@@ -17,7 +38,7 @@ export async function highlightCode(
   lang: string
 ): Promise<string> {
   const hl = await getHighlighter();
-  const validLang = ["python", "java", "c", "markdown", "makefile"].includes(lang)
+  const validLang = (SUPPORTED_LANGS as readonly string[]).includes(lang)
     ? lang
     : "text";
   if (validLang === "text") {
@@ -31,5 +52,6 @@ export async function highlightCode(
   return hl.codeToHtml(code, {
     lang: validLang,
     themes: { light: "github-light", dark: "github-dark" },
+    transformers: validLang === "diff" ? [diffLineTransformer] : [],
   });
 }

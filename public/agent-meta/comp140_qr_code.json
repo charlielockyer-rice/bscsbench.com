@@ -1,0 +1,1 @@
+{"workspaceId":"comp140_qr_code","modelUsage":[{"model":"claude-sonnet-4-6","inputTokens":15,"outputTokens":9918,"cacheReadTokens":563493,"costUsd":0.7237715000000002},{"model":"claude-haiku-4-5-20251001","inputTokens":1099,"outputTokens":32,"cacheReadTokens":0,"costUsd":0.001259}],"claudeCodeVersion":"2.1.61","rateLimitEvents":0}

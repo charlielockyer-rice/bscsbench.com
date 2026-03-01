@@ -1,0 +1,1 @@
+{"workspaceId":"comp140_kevin_bacon_opus","modelUsage":[{"model":"claude-opus-4-6","inputTokens":10,"outputTokens":3843,"cacheReadTokens":385338,"costUsd":0.52047525},{"model":"claude-haiku-4-5-20251001","inputTokens":1405,"outputTokens":64,"cacheReadTokens":0,"costUsd":0.001725}],"claudeCodeVersion":"2.1.62","rateLimitEvents":0}

@@ -1,0 +1,1 @@
+{"workspaceId":"comp140_qr_code_opus","modelUsage":[{"model":"claude-opus-4-6","inputTokens":24,"outputTokens":5621,"cacheReadTokens":1004902,"costUsd":0.8331397500000001},{"model":"claude-haiku-4-5-20251001","inputTokens":1097,"outputTokens":32,"cacheReadTokens":0,"costUsd":0.001257}],"claudeCodeVersion":"2.1.62","rateLimitEvents":0}
