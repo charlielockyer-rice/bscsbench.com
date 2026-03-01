@@ -206,7 +206,7 @@ export type RankingMetric =
   | "overall"
   | "gpa"
   | "passRate"
-  | "solved"
+  | "totalTime"
   | "costEfficiency"
   | "speed";
 

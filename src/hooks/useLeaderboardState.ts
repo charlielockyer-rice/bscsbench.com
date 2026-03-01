@@ -18,8 +18,6 @@ export function useLeaderboardState() {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [selectedCourses, setSelectedCourses] = useState<string[]>([]);
   const [search, setSearch] = useState("");
-  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
-
   const allTags = useMemo(() => getAllTags(data.entries), [data.entries]);
 
   const entries = useMemo(() => {
@@ -27,18 +25,10 @@ export function useLeaderboardState() {
     result = filterByTags(result, selectedTags);
     result = filterBySearch(result, search);
     result = filterByCourses(result, selectedCourses);
-    result = sortEntries(result, rankingMetric);
+    const direction = rankingMetric === "totalTime" ? "asc" : "desc";
+    result = sortEntries(result, rankingMetric, direction);
     return result;
   }, [data.entries, selectedTags, search, selectedCourses, rankingMetric]);
-
-  function toggleExpanded(id: string) {
-    setExpandedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  }
 
   return {
     entries,
@@ -50,8 +40,6 @@ export function useLeaderboardState() {
     setSelectedCourses,
     search,
     setSearch,
-    expandedIds,
-    toggleExpanded,
     courses: data.courses,
     allTags,
   };

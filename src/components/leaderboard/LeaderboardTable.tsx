@@ -23,8 +23,6 @@ export function LeaderboardTable() {
     setSelectedCourses,
     search,
     setSearch,
-    expandedIds,
-    toggleExpanded,
     courses,
     allTags,
   } = useLeaderboardState();
@@ -64,7 +62,7 @@ export function LeaderboardTable() {
               Score
             </TableHead>
             <TableHead className="text-xs uppercase tracking-wider text-muted-foreground hidden md:table-cell">
-              Solved
+              Time
             </TableHead>
             <TableHead className="text-xs uppercase tracking-wider text-muted-foreground hidden md:table-cell">
               Cost
@@ -84,8 +82,6 @@ export function LeaderboardTable() {
               entry={entry}
               rank={i + 1}
               courses={courses}
-              expanded={expandedIds.has(entry.id)}
-              onToggle={() => toggleExpanded(entry.id)}
             />
           ))}
           {entries.length === 0 && (

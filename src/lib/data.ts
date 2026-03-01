@@ -195,6 +195,31 @@ function transformRun(run: ArchiveRun): BenchmarkEntry {
 
 let cached: BenchmarkData | null = null;
 
+export function getEntryByModelId(modelId: string): BenchmarkEntry | null {
+  const data = getBenchmarkData();
+  return data.entries.find((e) => e.model.id === modelId) ?? null;
+}
+
+export function getEntryByWorkspaceId(
+  workspaceId: string
+): { modelId: string; modelName: string; assignmentName: string } | null {
+  const data = getBenchmarkData();
+  for (const entry of data.entries) {
+    for (const course of Object.values(entry.courses)) {
+      for (const assignment of course.assignments) {
+        if (assignment.id === workspaceId) {
+          return {
+            modelId: entry.model.id,
+            modelName: entry.model.name,
+            assignmentName: assignment.displayName,
+          };
+        }
+      }
+    }
+  }
+  return null;
+}
+
 export function getBenchmarkData(): BenchmarkData {
   if (cached) return cached;
   const data = rawData as unknown as ResultsFile;

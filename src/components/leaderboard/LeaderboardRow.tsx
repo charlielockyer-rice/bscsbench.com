@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import type { BenchmarkEntry, CourseInfo } from "@/lib/types";
 import {
@@ -7,10 +8,10 @@ import {
   formatCost,
   formatRelativeDate,
   formatGpa,
+  formatTime,
 } from "@/lib/formatting";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { ExpandedRow } from "./ExpandedRow";
 import { PassRateBar, rateColor } from "./PassRateBar";
 
 function rankStyle(rank: number): string {
@@ -57,32 +58,21 @@ export function LeaderboardRow({
   entry,
   rank,
   courses,
-  expanded,
-  onToggle,
 }: {
   entry: BenchmarkEntry;
   rank: number;
   courses: Record<string, CourseInfo>;
-  expanded: boolean;
-  onToggle: () => void;
 }) {
   const courseIds = Object.keys(courses).sort();
+  const href = `/models/${entry.model.id}`;
 
   return (
     <>
       {/* Desktop */}
-      <tr
-        className="hidden cursor-pointer hover:bg-muted/50 md:table-row"
-        onClick={onToggle}
-      >
+      <tr className="hidden md:table-row hover:bg-muted/50">
         <td className="p-2 align-middle">
-          <div className="flex items-center gap-1.5">
-            <ChevronRight
-              className={cn(
-                "size-3.5 text-muted-foreground transition-transform",
-                expanded && "rotate-90"
-              )}
-            />
+          <Link href={href} className="flex items-center gap-1.5">
+            <ChevronRight className="size-3.5 text-muted-foreground" />
             <span
               className={cn(
                 "font-mono tabular-nums text-sm font-bold w-6 text-center",
@@ -91,10 +81,10 @@ export function LeaderboardRow({
             >
               {rank}
             </span>
-          </div>
+          </Link>
         </td>
         <td className="p-2 align-middle">
-          <div className="flex items-center gap-2.5">
+          <Link href={href} className="flex items-center gap-2.5">
             {entry.model.logo ? (
               <img
                 src={entry.model.logo}
@@ -124,47 +114,42 @@ export function LeaderboardRow({
                 </div>
               )}
             </div>
-          </div>
+          </Link>
         </td>
         <td className="p-2 align-middle">
-          <div className="flex flex-col">
-            <span className="font-mono tabular-nums text-sm font-semibold">
-              {formatPercent(entry.scores.overall)}
-            </span>
-            <span className="font-mono tabular-nums text-xs text-muted-foreground">
-              {formatGpa(entry.scores.gpa)} GPA
-            </span>
-          </div>
+          <Link href={href}>
+            <div className="flex flex-col">
+              <span className="font-mono tabular-nums text-sm font-semibold">
+                {formatPercent(entry.scores.overall)}
+              </span>
+              <span className="font-mono tabular-nums text-xs text-muted-foreground">
+                {formatGpa(entry.scores.gpa)} GPA
+              </span>
+            </div>
+          </Link>
         </td>
         <td className="p-2 align-middle font-mono tabular-nums text-sm hidden md:table-cell">
-          {entry.assignmentsSolved}/{entry.assignmentsTotal}
+          <Link href={href}>{formatTime(entry.totals.durationMs / 1000)}</Link>
         </td>
         <td className="p-2 align-middle font-mono tabular-nums text-sm hidden md:table-cell">
-          {formatCost(entry.totals.costUsd)}
+          <Link href={href}>{formatCost(entry.totals.costUsd)}</Link>
         </td>
         <td className="p-2 align-middle text-sm text-muted-foreground hidden md:table-cell">
-          {formatRelativeDate(entry.date)}
+          <Link href={href}>{formatRelativeDate(entry.date)}</Link>
         </td>
         <td className="p-2 align-middle hidden md:table-cell">
-          <MiniCourseBars entry={entry} courseIds={courseIds} />
+          <Link href={href}>
+            <MiniCourseBars entry={entry} courseIds={courseIds} />
+          </Link>
         </td>
       </tr>
-
-      {/* Desktop expanded */}
-      {expanded && (
-        <tr className="hidden md:table-row">
-          <td colSpan={7} className="bg-muted/30 p-0">
-            <ExpandedRow entry={entry} courses={courses} />
-          </td>
-        </tr>
-      )}
 
       {/* Mobile card */}
       <tr className="md:hidden">
         <td colSpan={7} className="p-0">
-          <div
-            className="border-b p-4 cursor-pointer hover:bg-muted/50"
-            onClick={onToggle}
+          <Link
+            href={href}
+            className="block border-b p-4 hover:bg-muted/50"
           >
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-2.5">
@@ -218,8 +203,7 @@ export function LeaderboardRow({
                   {formatPercent(entry.scores.overall)}
                 </div>
                 <div className="font-mono tabular-nums text-xs text-muted-foreground">
-                  {entry.assignmentsSolved}/
-                  {entry.assignmentsTotal} solved
+                  {formatTime(entry.totals.durationMs / 1000)}
                 </div>
               </div>
             </div>
@@ -233,13 +217,7 @@ export function LeaderboardRow({
               </div>
               <MiniCourseBars entry={entry} courseIds={courseIds} />
             </div>
-
-            {expanded && (
-              <div className="mt-3 -mx-4 -mb-4 border-t">
-                <ExpandedRow entry={entry} courses={courses} />
-              </div>
-            )}
-          </div>
+          </Link>
         </td>
       </tr>
     </>

@@ -10,8 +10,8 @@ function getMetricValue(entry: BenchmarkEntry, metric: RankingMetric): number {
       return entry.totals.testsTotal > 0
         ? (entry.totals.testsPassed / entry.totals.testsTotal) * 100
         : 0;
-    case "solved":
-      return entry.assignmentsSolved;
+    case "totalTime":
+      return entry.totals.durationMs;
     case "costEfficiency":
       return entry.totals.costUsd > 0
         ? entry.scores.overall / entry.totals.costUsd
