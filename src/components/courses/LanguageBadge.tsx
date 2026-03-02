@@ -1,3 +1,9 @@
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
+
 const LANGUAGE_LOGOS: Record<string, { src: string; label: string }> = {
   python: { src: "/logos/python.svg", label: "Python" },
   java: { src: "/logos/java.svg", label: "Java" },
@@ -13,11 +19,11 @@ export function LanguageBadge({ language }: { language: string }) {
   }
 
   return (
-    <span className="relative group/logo">
-      <img src={info.src} alt={info.label} className="size-9" />
-      <span className="absolute left-1/2 -translate-x-1/2 -top-9 px-2 py-0.5 rounded bg-foreground text-background text-xs whitespace-nowrap opacity-0 group-hover/logo:opacity-100 transition-opacity pointer-events-none">
-        {info.label}
-      </span>
-    </span>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <img src={info.src} alt={info.label} className="size-9" />
+      </TooltipTrigger>
+      <TooltipContent>{info.label}</TooltipContent>
+    </Tooltip>
   );
 }
