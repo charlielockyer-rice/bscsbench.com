@@ -15,7 +15,7 @@ export default function AboutPage() {
   const courseList = Object.values(courses);
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-[1800px] px-4 py-12 sm:px-6 lg:px-[5%]">
       <h1 className="text-4xl font-bold tracking-tight">About</h1>
 
       <section className="mt-10">

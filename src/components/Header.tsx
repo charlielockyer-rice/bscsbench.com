@@ -17,7 +17,7 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-sm">
-      <div className="flex h-14 items-center justify-between px-6 lg:px-12">
+      <div className="mx-auto flex h-14 max-w-[1800px] items-center justify-between px-6 lg:px-[5%]">
         <Link href="/" className="text-lg font-bold tracking-tight">
           BSCS Bench
         </Link>

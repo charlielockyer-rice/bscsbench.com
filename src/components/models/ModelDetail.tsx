@@ -134,9 +134,9 @@ export function ModelDetail({
           Course Breakdown
         </h2>
         <div className="rounded-lg border">
-          <table className="w-full text-sm">
+          <table className="w-full text-base">
             <thead>
-              <tr className="text-xs uppercase tracking-wider text-muted-foreground border-b">
+              <tr className="text-sm uppercase tracking-wider text-muted-foreground border-b">
                 <th className="p-3 pr-4 text-left font-medium">Course</th>
                 <th className="p-3 pr-4 text-left font-medium w-32">Tests</th>
                 <th className="p-3 pr-4 text-left font-medium w-32">Written</th>

@@ -10,7 +10,7 @@ export default async function BlogPostPage({
   if (slug !== "introducing-bscs-bench") return notFound();
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-[1800px] px-4 py-12 sm:px-6 lg:px-[5%]">
       <article>
         <header>
           <p className="text-sm text-muted-foreground">February 26, 2026</p>

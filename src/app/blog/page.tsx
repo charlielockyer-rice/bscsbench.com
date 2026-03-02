@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function BlogPage() {
   return (
-    <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-[1800px] px-4 py-12 sm:px-6 lg:px-[5%]">
       <h1 className="text-4xl font-bold tracking-tight">Blog</h1>
 
       <div className="mt-10">

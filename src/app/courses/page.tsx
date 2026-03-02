@@ -7,7 +7,7 @@ export default function CoursesPage() {
   const courseList = Object.values(courses);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-[1800px] px-4 py-12 sm:px-6 lg:px-[5%]">
       <h1 className="text-4xl font-bold tracking-tight">Courses</h1>
       <p className="mt-2 text-lg text-muted-foreground">
         9 courses spanning Python, Java, C, and theoretical proof-writing.

@@ -52,7 +52,7 @@ export function MarkdownWithToc({ text }: MarkdownWithTocProps) {
   return (
     <div className="flex gap-8">
       <nav className="hidden lg:block w-52 shrink-0">
-        <div className="sticky top-14 max-h-[calc(100vh-8rem)] overflow-y-auto pr-2">
+        <div className="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto pr-2">
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
             Contents
           </p>

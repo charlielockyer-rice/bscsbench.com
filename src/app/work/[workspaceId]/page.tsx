@@ -133,7 +133,7 @@ export default async function WorkPage({
     : [];
 
   return (
-    <div className="px-4 py-12 sm:px-6 lg:px-12">
+    <div className="mx-auto max-w-[1800px] px-4 py-12 sm:px-6 lg:px-[5%]">
       <Link
         href={`/models/${context.modelId}`}
         className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-8"

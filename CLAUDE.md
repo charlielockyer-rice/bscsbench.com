@@ -4,13 +4,8 @@ Next.js 16 app (app router, server components) that displays AI model benchmark 
 
 ## Layout Decisions
 
-### Full-width navbar
-`src/components/Header.tsx` uses full viewport width with horizontal padding (`px-6 lg:px-12`), no max-width. This was intentional — the site branding sits on the far left and nav links on the far right.
-
-### Work page (`/work/[workspaceId]`) — no max-width
-The work page has no `max-width` constraint, only horizontal padding (`px-4 sm:px-6 lg:px-12`). This is because the page is a **tool/viewer** (code, diffs, file trees, tables), not prose. Code viewers and diff panels benefit from horizontal space.
-
-The header (back link + title), tab bar, and all tab content are left-aligned within this padding.
+### Global page width: `max-w-[1800px]` + `lg:px-[5%]`
+All pages and the navbar use `mx-auto max-w-[1800px] px-4 sm:px-6 lg:px-[5%]`. The 5% padding scales proportionally with viewport width; the 1800px cap prevents content from stretching too wide on ultrawides. Small screens use fixed padding (`px-4 sm:px-6`) below the `lg` breakpoint.
 
 ### MarkdownWithToc — centered content with symmetric spacer
 `src/components/work/MarkdownWithToc.tsx` renders markdown with a table-of-contents sidebar. The layout uses a 3-column flex:
