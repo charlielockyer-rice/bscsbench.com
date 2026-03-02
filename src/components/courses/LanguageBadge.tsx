@@ -1,20 +1,23 @@
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
-
-const LANGUAGE_STYLES: Record<string, string> = {
-  python: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-  java: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
-  c: "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200",
-  proof: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
+const LANGUAGE_LOGOS: Record<string, { src: string; label: string }> = {
+  python: { src: "/logos/python.svg", label: "Python" },
+  java: { src: "/logos/java.svg", label: "Java" },
+  c: { src: "/logos/c.svg", label: "C" },
+  proof: { src: "/logos/proof.svg", label: "Proof" },
 };
 
 export function LanguageBadge({ language }: { language: string }) {
+  const info = LANGUAGE_LOGOS[language];
+
+  if (!info) {
+    return <span className="text-sm text-muted-foreground">{language}</span>;
+  }
+
   return (
-    <Badge
-      variant="outline"
-      className={cn("border-transparent", LANGUAGE_STYLES[language])}
-    >
-      {language}
-    </Badge>
+    <span className="relative group/logo">
+      <img src={info.src} alt={info.label} className="size-9" />
+      <span className="absolute left-1/2 -translate-x-1/2 -top-9 px-2 py-0.5 rounded bg-foreground text-background text-xs whitespace-nowrap opacity-0 group-hover/logo:opacity-100 transition-opacity pointer-events-none">
+        {info.label}
+      </span>
+    </span>
   );
 }
