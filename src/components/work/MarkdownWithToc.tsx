@@ -1,23 +1,25 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { renderMarkdownLite, extractTocEntries } from "@/components/traces/markdown-lite";
 import type { TocEntry } from "@/components/traces/markdown-lite";
+
+const HEADING_SELECTOR = "h1[id], h2[id], h3[id], h4[id], h5[id], h6[id]";
 
 interface MarkdownWithTocProps {
   text: string;
 }
 
 export function MarkdownWithToc({ text }: MarkdownWithTocProps) {
-  const tocEntries = extractTocEntries(text);
+  const tocEntries = useMemo(() => extractTocEntries(text), [text]);
   const [activeSlug, setActiveSlug] = useState(tocEntries[0]?.slug ?? "");
   const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!contentRef.current || tocEntries.length === 0) return;
 
-    const headings = contentRef.current.querySelectorAll("[id]");
+    const headings = contentRef.current.querySelectorAll(HEADING_SELECTOR);
     if (headings.length === 0) return;
 
     const observer = new IntersectionObserver(
@@ -34,7 +36,7 @@ export function MarkdownWithToc({ text }: MarkdownWithTocProps) {
 
     headings.forEach((el) => observer.observe(el));
     return () => observer.disconnect();
-  }, [tocEntries.length]);
+  }, [text, tocEntries.length]);
 
   // No headers — just render the markdown without a TOC
   if (tocEntries.length === 0) {

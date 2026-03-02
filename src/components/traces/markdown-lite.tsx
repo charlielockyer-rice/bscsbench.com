@@ -7,12 +7,23 @@ export interface TocEntry {
 }
 
 function slugify(text: string): string {
-  return text
+  const slug = text
     .toLowerCase()
     .replace(/[`*]/g, "")
     .replace(/[^a-z0-9\s-]/g, "")
     .replace(/\s+/g, "-")
-    .replace(/-+/g, "-");
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+  return slug || "section";
+}
+
+/** Deduplicate a slug against a running count map, returning a unique slug. */
+function uniqueSlug(text: string, slugCounts: Map<string, number>): string {
+  let slug = slugify(text);
+  const count = slugCounts.get(slug) ?? 0;
+  slugCounts.set(slug, count + 1);
+  if (count > 0) slug += `-${count}`;
+  return slug;
 }
 
 /** Extract a table-of-contents from raw markdown text. */
@@ -30,11 +41,7 @@ export function extractTocEntries(text: string): TocEntry[] {
     if (match) {
       const level = match[1].length;
       const rawText = match[2].replace(/[`*]/g, "");
-      let slug = slugify(rawText);
-      const count = slugCounts.get(slug) ?? 0;
-      slugCounts.set(slug, count + 1);
-      if (count > 0) slug += `-${count}`;
-      entries.push({ level, text: rawText, slug });
+      entries.push({ level, text: rawText, slug: uniqueSlug(match[2], slugCounts) });
     }
   }
   return entries;
@@ -88,10 +95,7 @@ export function renderMarkdownLite(text: string): React.ReactNode[] {
         h5: "text-sm font-medium",
         h6: "text-xs font-medium uppercase tracking-wider",
       };
-      let headerSlug = slugify(headerMatch[2]);
-      const count = slugCounts.get(headerSlug) ?? 0;
-      slugCounts.set(headerSlug, count + 1);
-      if (count > 0) headerSlug += `-${count}`;
+      const headerSlug = uniqueSlug(headerMatch[2], slugCounts);
       blocks.push(
         <Tag key={blocks.length} id={headerSlug} className={`${sizes[`h${level}`]} mt-3 mb-1 scroll-mt-16`}>
           {renderInline(headerMatch[2])}
