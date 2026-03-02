@@ -15,7 +15,7 @@ import { TraceViewer } from "@/components/traces/TraceViewer";
 import { StatsCards } from "@/components/work/StatsCards";
 import { ModelUsageTable } from "@/components/work/ModelUsageTable";
 import { WorkTabs } from "@/components/work/WorkTabs";
-import { renderMarkdownLite } from "@/components/traces/markdown-lite";
+import { MarkdownWithToc } from "@/components/work/MarkdownWithToc";
 
 interface AssignmentData {
   assignmentBase: string;
@@ -96,9 +96,17 @@ export default async function WorkPage({
       )
     : [];
 
-  const highlightedDiff = solution?.diff
-    ? await highlightCode(solution.diff, "diff")
-    : null;
+  // Split diff into per-file chunks and highlight each
+  const diffChunks: { filePath: string; highlightedHtml: string }[] = [];
+  if (solution?.diff) {
+    const parts = solution.diff.split(/^(?=diff --git )/m).filter(Boolean);
+    for (const part of parts) {
+      const headerMatch = part.match(/^diff --git a\/(.+?) b\/(.+)/);
+      const filePath = headerMatch?.[2] ?? "unknown";
+      const html = await highlightCode(part, "diff");
+      diffChunks.push({ filePath, highlightedHtml: html });
+    }
+  }
 
   // Highlight provided files
   const highlightedProvided = assignmentData?.providedFiles.length
@@ -125,7 +133,7 @@ export default async function WorkPage({
     : [];
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
+    <div className="px-4 py-12 sm:px-6 lg:px-12">
       <Link
         href={`/models/${context.modelId}`}
         className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-8"
@@ -150,9 +158,7 @@ export default async function WorkPage({
             label: "Instructions",
             disabled: !assignmentData?.instructions,
             content: assignmentData?.instructions ? (
-              <div className="text-sm leading-relaxed space-y-2">
-                {renderMarkdownLite(assignmentData.instructions)}
-              </div>
+              <MarkdownWithToc text={assignmentData.instructions} />
             ) : null,
           },
           {
@@ -174,13 +180,20 @@ export default async function WorkPage({
           {
             id: "diff",
             label: "Diff",
-            disabled: !highlightedDiff,
-            content: highlightedDiff ? (
-              <div className="diff-viewer rounded-lg border bg-card overflow-x-auto">
-                <div
-                  className="text-sm [&_pre]:!bg-transparent [&_pre]:!py-3 [&_code]:text-xs"
-                  dangerouslySetInnerHTML={{ __html: highlightedDiff }}
-                />
+            disabled: diffChunks.length === 0,
+            content: diffChunks.length > 0 ? (
+              <div className="space-y-4">
+                {diffChunks.map((chunk, i) => (
+                  <div key={i} className="diff-viewer rounded-lg border bg-card overflow-hidden">
+                    <div className="px-4 py-2 border-b bg-muted/30 text-xs font-mono text-muted-foreground">
+                      {chunk.filePath}
+                    </div>
+                    <div
+                      className="text-sm [&_pre]:!bg-transparent [&_pre]:!py-3 [&_code]:text-xs overflow-x-auto"
+                      dangerouslySetInnerHTML={{ __html: chunk.highlightedHtml }}
+                    />
+                  </div>
+                ))}
               </div>
             ) : null,
           },

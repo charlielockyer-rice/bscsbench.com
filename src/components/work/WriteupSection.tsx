@@ -1,4 +1,4 @@
-import { renderMarkdownLite } from "@/components/traces/markdown-lite";
+import { MarkdownWithToc } from "@/components/work/MarkdownWithToc";
 
 interface WriteupSectionProps {
   writeup: { filename: string; content: string; format: "md" | "txt" } | null;
@@ -9,15 +9,13 @@ export function WriteupSection({ writeup }: WriteupSectionProps) {
     return <p className="text-sm text-muted-foreground">No writeup submitted</p>;
   }
 
+  if (writeup.format === "md") {
+    return <MarkdownWithToc text={writeup.content} />;
+  }
+
   return (
-    <div className="text-sm leading-relaxed space-y-2">
-      {writeup.format === "md" ? (
-        renderMarkdownLite(writeup.content)
-      ) : (
-        <pre className="font-mono text-sm whitespace-pre-wrap">
-          {writeup.content}
-        </pre>
-      )}
-    </div>
+    <pre className="font-mono text-sm whitespace-pre-wrap">
+      {writeup.content}
+    </pre>
   );
 }
