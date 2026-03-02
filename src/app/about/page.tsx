@@ -76,7 +76,7 @@ export default function AboutPage() {
                   </TableCell>
                   <TableCell>{course.title}</TableCell>
                   <TableCell>
-                    <LanguageBadge language={course.language} />
+                    <LanguageBadge language={course.language} hasWritten={course.hasWritten} />
                   </TableCell>
                   <TableCell className="text-right">
                     {course.totalAssignments}

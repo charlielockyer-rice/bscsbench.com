@@ -29,7 +29,7 @@ export default function CoursesPage() {
                   {course.title}
                 </h2>
               </div>
-              <LanguageBadge language={course.language} />
+              <LanguageBadge language={course.language} hasWritten={course.hasWritten} />
             </div>
             <div className="mt-4 flex gap-6 text-sm text-muted-foreground">
               <span>

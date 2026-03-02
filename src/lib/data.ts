@@ -229,10 +229,26 @@ export function getEntryByWorkspaceId(
 export function getBenchmarkData(): BenchmarkData {
   if (cached) return cached;
   const data = rawData as unknown as ResultsFile;
+
+  // Derive which courses have written (LLM-graded) components
+  const coursesWithWritten = new Set<string>();
+  for (const run of data.runs) {
+    for (const ws of Object.values(run.workspaces)) {
+      if (ws.llm_grade?.status === "graded") {
+        coursesWithWritten.add(ws.course);
+      }
+    }
+  }
+
+  const courses: Record<string, import("./types").CourseInfo> = {};
+  for (const [id, c] of Object.entries(data.courses)) {
+    courses[id] = { ...c, hasWritten: coursesWithWritten.has(id) };
+  }
+
   cached = {
     version: data.version,
     lastUpdated: data.lastUpdated,
-    courses: data.courses,
+    courses,
     entries: data.runs.map(transformRun),
   };
   return cached;

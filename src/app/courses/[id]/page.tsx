@@ -44,7 +44,7 @@ export default async function CourseDetailPage({
         <h1 className="text-4xl font-bold tracking-tight">
           {course.displayName}: {course.title}
         </h1>
-        <LanguageBadge language={course.language} />
+        <LanguageBadge language={course.language} hasWritten={course.hasWritten} />
       </div>
       <p className="mt-2 text-lg text-muted-foreground">
         {course.totalAssignments} assignments &middot; {course.totalTests} total

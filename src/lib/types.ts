@@ -120,6 +120,7 @@ export interface CourseInfo {
   displayName: string;
   title: string;
   language: string;
+  hasWritten: boolean;
   totalAssignments: number;
   totalTests: number;
 }
