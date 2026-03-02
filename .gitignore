@@ -36,11 +36,15 @@ yarn-error.log*
 # vercel
 .vercel
 
-# generated traces
-/public/traces/
+# data archives
+/data/
+/archive-*/
 
-# generated solutions
+# generated data
+/public/traces/
 /public/solutions/
+/public/assignments/
+/public/agent-meta/
 
 # typescript
 *.tsbuildinfo
