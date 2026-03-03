@@ -111,6 +111,25 @@ export default async function AssignmentDetailPage({
       <WorkTabs
         tabs={[
           {
+            id: "instructions",
+            label: "Instructions",
+            disabled: !assignmentData.instructions,
+            content: assignmentData.instructions ? (
+              <MarkdownWithToc
+                text={assignmentData.instructions}
+                highlightedBlocks={highlightedBlocks}
+              />
+            ) : null,
+          },
+          {
+            id: "provided",
+            label: "Provided Files",
+            disabled: highlightedProvided.length === 0,
+            content: highlightedProvided.length > 0 ? (
+              <SolutionViewer files={highlightedProvided} />
+            ) : null,
+          },
+          {
             id: "leaderboard",
             label: "Leaderboard",
             disabled: assignmentEntries.length === 0,
@@ -170,25 +189,6 @@ export default async function AssignmentDetailPage({
                 </TableBody>
               </Table>
             ),
-          },
-          {
-            id: "instructions",
-            label: "Instructions",
-            disabled: !assignmentData.instructions,
-            content: assignmentData.instructions ? (
-              <MarkdownWithToc
-                text={assignmentData.instructions}
-                highlightedBlocks={highlightedBlocks}
-              />
-            ) : null,
-          },
-          {
-            id: "provided",
-            label: "Provided Files",
-            disabled: highlightedProvided.length === 0,
-            content: highlightedProvided.length > 0 ? (
-              <SolutionViewer files={highlightedProvided} />
-            ) : null,
           },
         ]}
       />
