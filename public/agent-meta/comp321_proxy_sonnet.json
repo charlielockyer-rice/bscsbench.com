@@ -1,0 +1,1 @@
+{"workspaceId":"comp321_proxy_sonnet","modelUsage":[{"model":"claude-sonnet-4-6","inputTokens":26,"outputTokens":78912,"cacheReadTokens":1960613,"costUsd":3.6797552499999995}],"claudeCodeVersion":"","rateLimitEvents":0}

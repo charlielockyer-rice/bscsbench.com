@@ -40,11 +40,6 @@ yarn-error.log*
 /data/
 /archive-*/
 
-# generated data
-/public/traces/
-/public/solutions/
-/public/assignments/
-/public/agent-meta/
 
 # typescript
 *.tsbuildinfo
