@@ -4,9 +4,9 @@ export function Footer() {
       <div className="mx-auto max-w-[1800px] px-4 sm:px-6 lg:px-[5%] py-8">
         <p className="text-sm text-muted-foreground">
           BSCS Bench &middot; Not affiliated with Rice University
-          &middot; Writing icon by{" "}
+          &middot; Icons by{" "}
           <a
-            href="https://www.flaticon.com/free-icon/writing_509702"
+            href="https://www.flaticon.com"
             className="underline hover:text-foreground"
             target="_blank"
             rel="noopener noreferrer"

@@ -11,6 +11,11 @@ import {
   formatTime,
 } from "@/lib/formatting";
 import { Badge } from "@/components/ui/badge";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { PassRateBar, rateColor } from "./PassRateBar";
 
@@ -122,8 +127,16 @@ export function LeaderboardRow({
               <span className="tabular-nums text-sm font-semibold">
                 {formatPercent(entry.scores.overall)}
               </span>
-              <span className="tabular-nums text-xs text-muted-foreground">
+              <span className="flex items-center gap-1 tabular-nums text-xs text-muted-foreground">
                 {formatGpa(entry.scores.gpa)} GPA
+                {entry.scores.gpa >= 2.0 && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <img src="/logos/degree.png" alt="Graduate!" className="size-4" />
+                    </TooltipTrigger>
+                    <TooltipContent>Graduate!</TooltipContent>
+                  </Tooltip>
+                )}
               </span>
             </div>
           </Link>
@@ -202,8 +215,16 @@ export function LeaderboardRow({
                 <div className="tabular-nums text-lg font-semibold">
                   {formatPercent(entry.scores.overall)}
                 </div>
-                <div className="tabular-nums text-xs text-muted-foreground">
-                  {formatTime(entry.totals.durationMs / 1000)}
+                <div className="flex items-center justify-end gap-1 tabular-nums text-xs text-muted-foreground">
+                  {formatGpa(entry.scores.gpa)} GPA
+                  {entry.scores.gpa >= 2.0 && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <img src="/logos/degree.png" alt="Graduate!" className="size-4" />
+                      </TooltipTrigger>
+                      <TooltipContent>Graduate!</TooltipContent>
+                    </Tooltip>
+                  )}
                 </div>
               </div>
             </div>
