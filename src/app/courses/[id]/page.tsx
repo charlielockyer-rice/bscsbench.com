@@ -69,8 +69,8 @@ export default async function CourseDetailPage({
 
   return (
     <div className="mx-auto max-w-[1800px] px-4 py-12 sm:px-6 lg:px-[5%]">
-      <div className="flex items-center gap-4">
-        <h1 className="text-4xl font-bold tracking-tight">
+      <div className="flex flex-wrap items-center gap-3 sm:gap-4">
+        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
           {course.displayName}: {course.title}
         </h1>
         <LanguageBadge language={course.language} hasWritten={course.hasWritten} />
@@ -84,7 +84,9 @@ export default async function CourseDetailPage({
         <h2 className="text-2xl font-bold tracking-tight">
           Course Leaderboard
         </h2>
-        <div className="mt-4">
+
+        {/* Desktop table */}
+        <div className="mt-4 hidden md:block">
           <Table>
             <TableHeader>
               <TableRow>
@@ -137,6 +139,58 @@ export default async function CourseDetailPage({
               ))}
             </TableBody>
           </Table>
+        </div>
+
+        {/* Mobile cards */}
+        <div className="mt-4 divide-y md:hidden">
+          {courseEntries.map((entry, i) => (
+            <Link
+              key={entry.model}
+              href={`/models/${entry.modelId}`}
+              className="block py-3 first:pt-0 hover:bg-muted/50"
+            >
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="font-mono tabular-nums text-sm font-bold w-5 shrink-0 text-muted-foreground">
+                    {i + 1}
+                  </span>
+                  {entry.logo ? (
+                    <img
+                      src={entry.logo}
+                      alt={entry.provider}
+                      width={20}
+                      height={20}
+                      className="rounded size-5 shrink-0"
+                    />
+                  ) : (
+                    <span className="size-5 shrink-0 rounded bg-muted flex items-center justify-center text-[8px] font-bold text-muted-foreground">
+                      {entry.provider.charAt(0)}
+                    </span>
+                  )}
+                  <span className="font-medium text-sm truncate">
+                    {entry.model}
+                  </span>
+                </div>
+                <span className="font-mono tabular-nums text-sm font-semibold shrink-0">
+                  {entry.grade.toFixed(1)}%
+                  <span className="text-muted-foreground ml-1">
+                    ({entry.letter})
+                  </span>
+                </span>
+              </div>
+              <div className="mt-1 ml-7 flex gap-4 text-xs text-muted-foreground">
+                <span className="font-mono tabular-nums">
+                  Pass {entry.passRate.toFixed(1)}%
+                </span>
+                <span className="font-mono tabular-nums">
+                  {entry.solved}/{entry.total} solved
+                </span>
+                <span className="font-mono tabular-nums">
+                  ${entry.cost.toFixed(2)}
+                </span>
+              </div>
+            </Link>
+          ))}
         </div>
       </section>
 

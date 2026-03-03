@@ -135,26 +135,86 @@ export default async function AssignmentDetailPage({
             label: "Leaderboard",
             disabled: assignmentEntries.length === 0,
             content: (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-16">Rank</TableHead>
-                    <TableHead>Model</TableHead>
-                    <TableHead className="text-right">Score</TableHead>
-                    <TableHead className="text-right">Tests</TableHead>
-                    <TableHead className="text-right">Time</TableHead>
-                    <TableHead className="text-right">Cost</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
+              <>
+                {/* Desktop table */}
+                <div className="hidden md:block">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-16">Rank</TableHead>
+                        <TableHead>Model</TableHead>
+                        <TableHead className="text-right">Score</TableHead>
+                        <TableHead className="text-right">Tests</TableHead>
+                        <TableHead className="text-right">Time</TableHead>
+                        <TableHead className="text-right">Cost</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {assignmentEntries.map((entry, i) => (
+                        <TableRow key={entry.model}>
+                          <TableCell>{i + 1}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Link
+                                href={`/models/${entry.modelId}`}
+                                className="flex items-center gap-2 hover:underline"
+                              >
+                                {entry.logo ? (
+                                  <img
+                                    src={entry.logo}
+                                    alt={entry.provider}
+                                    width={20}
+                                    height={20}
+                                    className="rounded size-5"
+                                  />
+                                ) : (
+                                  <span className="size-5 rounded bg-muted flex items-center justify-center text-[8px] font-bold text-muted-foreground">
+                                    {entry.provider.charAt(0)}
+                                  </span>
+                                )}
+                                <span className="font-medium">{entry.model}</span>
+                              </Link>
+                              <Link
+                                href={`/work/${entry.workspaceId}`}
+                                className="text-muted-foreground hover:text-foreground"
+                                title="View work"
+                              >
+                                <ExternalLink className="size-3.5" />
+                              </Link>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-right font-mono tabular-nums">
+                            {entry.score.toFixed(1)}%
+                          </TableCell>
+                          <TableCell className="text-right font-mono tabular-nums">
+                            {entry.testsPassed}/{entry.testsTotal}
+                          </TableCell>
+                          <TableCell className="text-right font-mono tabular-nums">
+                            {entry.timeSeconds < 60
+                              ? `${entry.timeSeconds.toFixed(0)}s`
+                              : `${(entry.timeSeconds / 60).toFixed(1)}m`}
+                          </TableCell>
+                          <TableCell className="text-right font-mono tabular-nums">
+                            ${entry.cost.toFixed(2)}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                {/* Mobile cards */}
+                <div className="divide-y md:hidden">
                   {assignmentEntries.map((entry, i) => (
-                    <TableRow key={entry.model}>
-                      <TableCell>{i + 1}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
+                    <div key={entry.model} className="py-3 first:pt-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="font-mono tabular-nums text-sm font-bold w-5 shrink-0 text-muted-foreground">
+                            {i + 1}
+                          </span>
                           <Link
                             href={`/models/${entry.modelId}`}
-                            className="flex items-center gap-2 hover:underline"
+                            className="flex items-center gap-2 min-w-0 hover:underline"
                           >
                             {entry.logo ? (
                               <img
@@ -162,42 +222,46 @@ export default async function AssignmentDetailPage({
                                 alt={entry.provider}
                                 width={20}
                                 height={20}
-                                className="rounded size-5"
+                                className="rounded size-5 shrink-0"
                               />
                             ) : (
-                              <span className="size-5 rounded bg-muted flex items-center justify-center text-[8px] font-bold text-muted-foreground">
+                              <span className="size-5 shrink-0 rounded bg-muted flex items-center justify-center text-[8px] font-bold text-muted-foreground">
                                 {entry.provider.charAt(0)}
                               </span>
                             )}
-                            <span className="font-medium">{entry.model}</span>
+                            <span className="font-medium text-sm truncate">
+                              {entry.model}
+                            </span>
                           </Link>
                           <Link
                             href={`/work/${entry.workspaceId}`}
-                            className="text-muted-foreground hover:text-foreground"
+                            className="text-muted-foreground hover:text-foreground shrink-0"
                             title="View work"
                           >
                             <ExternalLink className="size-3.5" />
                           </Link>
                         </div>
-                      </TableCell>
-                      <TableCell className="text-right font-mono tabular-nums">
-                        {entry.score.toFixed(1)}%
-                      </TableCell>
-                      <TableCell className="text-right font-mono tabular-nums">
-                        {entry.testsPassed}/{entry.testsTotal}
-                      </TableCell>
-                      <TableCell className="text-right font-mono tabular-nums">
-                        {entry.timeSeconds < 60
-                          ? `${entry.timeSeconds.toFixed(0)}s`
-                          : `${(entry.timeSeconds / 60).toFixed(1)}m`}
-                      </TableCell>
-                      <TableCell className="text-right font-mono tabular-nums">
-                        ${entry.cost.toFixed(2)}
-                      </TableCell>
-                    </TableRow>
+                        <span className="font-mono tabular-nums text-sm font-semibold shrink-0">
+                          {entry.score.toFixed(1)}%
+                        </span>
+                      </div>
+                      <div className="mt-1 ml-7 flex gap-4 text-xs text-muted-foreground">
+                        <span className="font-mono tabular-nums">
+                          {entry.testsPassed}/{entry.testsTotal} tests
+                        </span>
+                        <span className="font-mono tabular-nums">
+                          {entry.timeSeconds < 60
+                            ? `${entry.timeSeconds.toFixed(0)}s`
+                            : `${(entry.timeSeconds / 60).toFixed(1)}m`}
+                        </span>
+                        <span className="font-mono tabular-nums">
+                          ${entry.cost.toFixed(2)}
+                        </span>
+                      </div>
+                    </div>
                   ))}
-                </TableBody>
-              </Table>
+                </div>
+              </>
             ),
           },
         ]}

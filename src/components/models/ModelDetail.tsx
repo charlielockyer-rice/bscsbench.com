@@ -35,6 +35,17 @@ export function ModelDetail({
     a.localeCompare(b)
   );
 
+  function getWrittenTotals(assignments: (typeof entry.courses)[string]["assignments"]) {
+    let earned = 0, possible = 0;
+    for (const a of assignments) {
+      if (a.llmGrade?.status === "graded" && a.llmGrade.pointsEarned != null) {
+        earned += a.llmGrade.pointsEarned;
+        possible += a.llmGrade.pointsPossible!;
+      }
+    }
+    return { earned, possible };
+  }
+
   const totalTokens =
     entry.totals.inputTokens +
     entry.totals.outputTokens +
@@ -132,7 +143,9 @@ export function ModelDetail({
         <h2 className="text-xl font-bold tracking-tight mb-4">
           Course Breakdown
         </h2>
-        <div className="rounded-lg border">
+
+        {/* Desktop table */}
+        <div className="hidden md:block rounded-lg border">
           <table className="w-full text-base">
             <thead>
               <tr className="text-sm uppercase tracking-wider text-muted-foreground border-b">
@@ -203,13 +216,7 @@ export function ModelDetail({
                       </td>
                       <td className="p-3 pr-4 font-mono tabular-nums">
                         {(() => {
-                          let earned = 0, possible = 0;
-                          for (const a of courseData.assignments) {
-                            if (a.llmGrade?.status === "graded" && a.llmGrade.pointsEarned != null) {
-                              earned += a.llmGrade.pointsEarned;
-                              possible += a.llmGrade.pointsPossible!;
-                            }
-                          }
+                          const { earned, possible } = getWrittenTotals(courseData.assignments);
                           return possible === 0 ? (
                             <span className="text-muted-foreground">N/A</span>
                           ) : (
@@ -312,6 +319,119 @@ export function ModelDetail({
               })}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile cards */}
+        <div className="md:hidden space-y-2">
+          {courseEntries.map(([courseId, courseData]) => {
+            const info = courses[courseId];
+            const isOpen = expandedCourse === courseId;
+
+            const { earned: writtenEarned, possible: writtenPossible } = getWrittenTotals(courseData.assignments);
+
+            return (
+              <div key={courseId} className="rounded-lg border">
+                <div
+                  className="cursor-pointer p-3 hover:bg-muted/30"
+                  onClick={() =>
+                    setExpandedCourse(isOpen ? null : courseId)
+                  }
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <ChevronRight
+                        className={cn(
+                          "size-4 shrink-0 text-muted-foreground transition-transform",
+                          isOpen && "rotate-90"
+                        )}
+                      />
+                      <Link
+                        href={`/courses/${courseId}`}
+                        className="font-medium hover:underline truncate"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {info?.displayName ?? courseId}
+                      </Link>
+                      {courseData.letter && (
+                        <Badge
+                          variant="outline"
+                          className="px-1.5 py-0 text-[10px] font-mono shrink-0"
+                        >
+                          {courseData.letter}
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <PassRateBar rate={courseData.grade} className="w-16" />
+                      <span className="font-mono tabular-nums text-xs">
+                        {formatPercent(courseData.grade)}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="mt-1.5 ml-6 flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-muted-foreground font-mono tabular-nums">
+                    {courseData.testsTotal > 0 && (
+                      <span>Tests {courseData.testsPassed}/{courseData.testsTotal}</span>
+                    )}
+                    {writtenPossible > 0 && (
+                      <span>Written {writtenEarned}/{writtenPossible}</span>
+                    )}
+                    <span>{formatCost(courseData.totalCost)}</span>
+                    <span>{formatTime(courseData.totalTimeSeconds)}</span>
+                  </div>
+                </div>
+                {isOpen && (
+                  <div className="border-t divide-y">
+                    {courseData.assignments.map((a) => {
+                      const hasWritten =
+                        a.llmGrade?.status === "graded" &&
+                        a.llmGrade.pointsEarned != null;
+                      const workHref = `/work/${a.id}`;
+
+                      return (
+                        <Link
+                          key={a.id}
+                          href={workHref}
+                          className="block px-3 py-2 bg-muted/20 hover:bg-muted/30"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
+                              <span className="text-xs truncate">{a.displayName}</span>
+                              {a.weight > 1 && (
+                                <Badge variant="outline" className="px-1 py-0 text-[9px] font-mono">
+                                  {a.weight}x
+                                </Badge>
+                              )}
+                              {a.isTimeout && (
+                                <Badge variant="outline" className="px-1 py-0 text-[9px] font-mono text-[oklch(0.75_0.15_75)]">
+                                  timeout
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0">
+                              <PassRateBar rate={a.score} className="w-12" />
+                              <span className="font-mono tabular-nums text-xs">
+                                {formatPercent(a.score)}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="mt-0.5 flex flex-wrap gap-x-3 text-[10px] text-muted-foreground font-mono tabular-nums">
+                            {a.testsTotal > 0 && (
+                              <span>{a.testsPassed}/{a.testsTotal} tests</span>
+                            )}
+                            {hasWritten && (
+                              <span>{a.llmGrade!.pointsEarned}/{a.llmGrade!.pointsPossible} written</span>
+                            )}
+                            <span>{formatCost(a.cost)}</span>
+                            <span>{formatTime(a.timeSeconds)}</span>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </section>
     </div>

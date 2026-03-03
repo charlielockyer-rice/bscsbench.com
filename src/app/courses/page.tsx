@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getBenchmarkData } from "@/lib/data";
 import { LanguageBadge } from "@/components/courses/LanguageBadge";
+import { ClickableRow } from "@/components/courses/ClickableRow";
 import {
   Table,
   TableBody,
@@ -26,7 +27,8 @@ export default function CoursesPage() {
         and theoretical proof-writing.
       </p>
 
-      <div className="mt-10">
+      {/* Desktop table */}
+      <div className="mt-10 hidden md:block">
         <Table>
           <TableHeader>
             <TableRow>
@@ -39,14 +41,13 @@ export default function CoursesPage() {
           </TableHeader>
           <TableBody>
             {courseList.map((course) => (
-              <TableRow key={course.id} className="group hover:bg-muted/50">
+              <ClickableRow
+                key={course.id}
+                href={`/courses/${course.id}`}
+                className="group cursor-pointer hover:bg-muted/50"
+              >
                 <TableCell className="font-medium">
-                  <Link
-                    href={`/courses/${course.id}`}
-                    className="hover:underline"
-                  >
-                    {course.displayName}
-                  </Link>
+                  {course.displayName}
                 </TableCell>
                 <TableCell className="text-muted-foreground group-hover:text-foreground">
                   {course.title}
@@ -63,10 +64,36 @@ export default function CoursesPage() {
                 <TableCell className="text-right text-muted-foreground group-hover:text-foreground">
                   {course.totalTests}
                 </TableCell>
-              </TableRow>
+              </ClickableRow>
             ))}
           </TableBody>
         </Table>
+      </div>
+
+      {/* Mobile cards */}
+      <div className="mt-10 space-y-3 md:hidden">
+        {courseList.map((course) => (
+          <Link
+            key={course.id}
+            href={`/courses/${course.id}`}
+            className="block rounded-lg border p-4 hover:bg-muted/50"
+          >
+            <div className="flex items-center justify-between gap-3">
+              <span className="font-medium">{course.displayName}</span>
+              <LanguageBadge
+                language={course.language}
+                hasWritten={course.hasWritten}
+              />
+            </div>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {course.title}
+            </p>
+            <div className="mt-2 flex gap-4 text-xs text-muted-foreground">
+              <span>{course.totalAssignments} assignments</span>
+              <span>{course.totalTests} tests</span>
+            </div>
+          </Link>
+        ))}
       </div>
     </div>
   );
