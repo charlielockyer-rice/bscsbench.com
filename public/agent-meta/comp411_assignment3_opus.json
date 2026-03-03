@@ -1,1 +1,1 @@
-{"workspaceId":"comp411_assignment3_opus","modelUsage":[{"model":"claude-opus-4-6","inputTokens":19,"outputTokens":11820,"cacheReadTokens":1208974,"costUsd":1.38507575},{"model":"claude-haiku-4-5-20251001","inputTokens":5656,"outputTokens":256,"cacheReadTokens":0,"costUsd":0.0069359999999999995}],"claudeCodeVersion":"2.1.62","rateLimitEvents":0}
+{"workspaceId":"comp411_assignment3_opus","modelUsage":[{"model":"claude-opus-4-6","inputTokens":18,"outputTokens":37517,"cacheReadTokens":1491011,"costUsd":2.2977955000000003}],"claudeCodeVersion":"2.1.63","rateLimitEvents":0}

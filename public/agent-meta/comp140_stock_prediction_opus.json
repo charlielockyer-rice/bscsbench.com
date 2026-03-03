@@ -1,1 +1,1 @@
-{"workspaceId":"comp140_stock_prediction_opus","modelUsage":[{"model":"claude-opus-4-6","inputTokens":14,"outputTokens":4088,"cacheReadTokens":448045,"costUsd":0.4529487499999999},{"model":"claude-haiku-4-5-20251001","inputTokens":1657,"outputTokens":739,"cacheReadTokens":48339,"costUsd":0.03901715}],"claudeCodeVersion":"2.1.62","rateLimitEvents":0}
+{"workspaceId":"comp140_stock_prediction_opus","modelUsage":[{"model":"claude-opus-4-6","inputTokens":16,"outputTokens":4645,"cacheReadTokens":550597,"costUsd":0.624216}],"claudeCodeVersion":"2.1.63","rateLimitEvents":0}

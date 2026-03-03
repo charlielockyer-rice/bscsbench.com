@@ -4,13 +4,17 @@ import { LanguageBadge } from "@/components/courses/LanguageBadge";
 
 export default function CoursesPage() {
   const { courses } = getBenchmarkData();
-  const courseList = Object.values(courses);
+  const courseList = Object.values(courses).sort((a, b) => {
+    const numA = parseInt(a.id.replace(/\D/g, ""));
+    const numB = parseInt(b.id.replace(/\D/g, ""));
+    return numA - numB;
+  });
 
   return (
     <div className="mx-auto max-w-[1800px] px-4 py-12 sm:px-6 lg:px-[5%]">
       <h1 className="text-4xl font-bold tracking-tight">Courses</h1>
       <p className="mt-2 text-lg text-muted-foreground">
-        9 courses spanning Python, Java, C, and theoretical proof-writing.
+        10 courses spanning Python, Java, C, TypeScript, Go, and theoretical proof-writing.
       </p>
 
       <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">

@@ -1,1 +1,1 @@
-{"workspaceId":"comp421_lab3_opus","modelUsage":[],"claudeCodeVersion":"2.1.62","rateLimitEvents":0}
+{"workspaceId":"comp421_lab3_opus","modelUsage":[{"model":"claude-opus-4-6","inputTokens":49,"outputTokens":124074,"cacheReadTokens":3469047,"costUsd":6.664974750000001},{"model":"claude-haiku-4-5-20251001","inputTokens":8938,"outputTokens":9063,"cacheReadTokens":497566,"costUsd":0.2009346}],"claudeCodeVersion":"2.1.63","rateLimitEvents":0}
