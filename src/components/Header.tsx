@@ -66,9 +66,9 @@ export function Header() {
         </div>
       </div>
 
-      {/* Mobile menu */}
+      {/* Mobile menu — overlays content */}
       {mobileOpen && (
-        <nav className="border-t bg-background sm:hidden">
+        <nav className="absolute inset-x-0 top-full border-t bg-background shadow-lg sm:hidden">
           <div className="mx-auto max-w-[1800px] px-4 py-2 space-y-1">
             {NAV_LINKS.map(({ href, label }) => (
               <Link
