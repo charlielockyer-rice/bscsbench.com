@@ -1,23 +1,6 @@
-import { getBenchmarkData } from "@/lib/data";
-import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { LanguageBadge } from "@/components/courses/LanguageBadge";
+import Link from "next/link";
 
 export default function AboutPage() {
-  const { courses } = getBenchmarkData();
-  const courseList = Object.values(courses).sort((a, b) => {
-    const numA = parseInt(a.id.replace(/\D/g, ""));
-    const numB = parseInt(b.id.replace(/\D/g, ""));
-    return numA - numB;
-  });
-
   return (
     <div className="mx-auto max-w-[1800px] px-4 py-12 sm:px-6 lg:px-[5%]">
       <h1 className="text-4xl font-bold tracking-tight">About</h1>
@@ -29,7 +12,7 @@ export default function AboutPage() {
         <p className="mt-4 text-muted-foreground leading-7">
           BSCS Bench is a comprehensive evaluation framework for testing AI
           coding agents on real university programming assignments. We evaluate
-          agents across 54 assignments from 9 courses at Rice University,
+          agents across 54 assignments from 9 computer science courses,
           spanning Python, Java, C, and theoretical proof-writing.
         </p>
       </section>
@@ -61,38 +44,16 @@ export default function AboutPage() {
 
       <section className="mt-10">
         <h2 className="text-2xl font-bold tracking-tight">Courses</h2>
-        <div className="mt-4">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Course</TableHead>
-                <TableHead>Title</TableHead>
-                <TableHead>Language</TableHead>
-                <TableHead className="text-right">Assignments</TableHead>
-                <TableHead className="text-right">Tests</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {courseList.map((course) => (
-                <TableRow key={course.id}>
-                  <TableCell className="font-medium">
-                    {course.displayName}
-                  </TableCell>
-                  <TableCell>{course.title}</TableCell>
-                  <TableCell>
-                    <LanguageBadge language={course.language} hasWritten={course.hasWritten} />
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {course.totalAssignments}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {course.totalTests}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+        <p className="mt-4 text-muted-foreground leading-7">
+          See our{" "}
+          <Link
+            href="/courses"
+            className="text-foreground underline underline-offset-4 hover:text-accent-foreground"
+          >
+            Courses
+          </Link>{" "}
+          page for the full list of courses and assignments.
+        </p>
       </section>
 
       <section className="mt-10">
@@ -123,7 +84,8 @@ export default function AboutPage() {
       <section className="mt-10">
         <h2 className="text-2xl font-bold tracking-tight">Team</h2>
         <p className="mt-4 text-muted-foreground leading-7">
-          BSCS Bench is developed at Rice University.
+          BSCS Bench was created by Charlie Lockyer and is not affiliated
+          with Rice University.
         </p>
       </section>
     </div>

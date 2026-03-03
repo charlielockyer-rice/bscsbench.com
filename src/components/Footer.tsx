@@ -1,26 +1,10 @@
-const FOOTER_LINKS = [
-  { href: "#", label: "GitHub" },
-  { href: "#", label: "Contact" },
-];
-
 export function Footer() {
   return (
     <footer className="border-t">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-8">
+      <div className="mx-auto max-w-[1800px] px-4 sm:px-6 lg:px-[5%] py-8">
         <p className="text-sm text-muted-foreground">
           BSCS Bench &middot; Not affiliated with Rice University
         </p>
-        <nav className="flex items-center gap-6">
-          {FOOTER_LINKS.map(({ href, label }) => (
-            <a
-              key={label}
-              href={href}
-              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-            >
-              {label}
-            </a>
-          ))}
-        </nav>
       </div>
     </footer>
   );

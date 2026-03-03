@@ -2,7 +2,7 @@ import { readFileSync, existsSync } from "fs";
 import { join } from "path";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ExternalLink } from "lucide-react";
 import { getBenchmarkData, getAssignmentBasesForCourse } from "@/lib/data";
 import { highlightCode, highlightMarkdownBlocks, getLangForFile } from "@/lib/shiki";
 import type { AssignmentData } from "@/lib/assignment-types";
@@ -51,6 +51,7 @@ export default async function AssignmentDetailPage({
       const a = courseResult.assignments.find((a) => a.number === assignmentInfo.number);
       if (!a) return [];
       return [{
+        modelId: e.model.id,
         model: e.model.name,
         logo: e.model.logo,
         provider: e.model.provider,
@@ -150,25 +151,34 @@ export default async function AssignmentDetailPage({
                     <TableRow key={entry.model}>
                       <TableCell>{i + 1}</TableCell>
                       <TableCell>
-                        <Link
-                          href={`/work/${entry.workspaceId}`}
-                          className="flex items-center gap-2 hover:underline"
-                        >
-                          {entry.logo ? (
-                            <img
-                              src={entry.logo}
-                              alt={entry.provider}
-                              width={20}
-                              height={20}
-                              className="rounded size-5"
-                            />
-                          ) : (
-                            <span className="size-5 rounded bg-muted flex items-center justify-center text-[8px] font-bold text-muted-foreground">
-                              {entry.provider.charAt(0)}
-                            </span>
-                          )}
-                          <span className="font-medium">{entry.model}</span>
-                        </Link>
+                        <div className="flex items-center gap-2">
+                          <Link
+                            href={`/models/${entry.modelId}`}
+                            className="flex items-center gap-2 hover:underline"
+                          >
+                            {entry.logo ? (
+                              <img
+                                src={entry.logo}
+                                alt={entry.provider}
+                                width={20}
+                                height={20}
+                                className="rounded size-5"
+                              />
+                            ) : (
+                              <span className="size-5 rounded bg-muted flex items-center justify-center text-[8px] font-bold text-muted-foreground">
+                                {entry.provider.charAt(0)}
+                              </span>
+                            )}
+                            <span className="font-medium">{entry.model}</span>
+                          </Link>
+                          <Link
+                            href={`/work/${entry.workspaceId}`}
+                            className="text-muted-foreground hover:text-foreground"
+                            title="View work"
+                          >
+                            <ExternalLink className="size-3.5" />
+                          </Link>
+                        </div>
                       </TableCell>
                       <TableCell className="text-right font-mono tabular-nums">
                         {entry.score.toFixed(1)}%

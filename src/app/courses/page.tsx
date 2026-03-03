@@ -1,6 +1,14 @@
 import Link from "next/link";
 import { getBenchmarkData } from "@/lib/data";
 import { LanguageBadge } from "@/components/courses/LanguageBadge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 export default function CoursesPage() {
   const { courses } = getBenchmarkData();
@@ -14,36 +22,51 @@ export default function CoursesPage() {
     <div className="mx-auto max-w-[1800px] px-4 py-12 sm:px-6 lg:px-[5%]">
       <h1 className="text-4xl font-bold tracking-tight">Courses</h1>
       <p className="mt-2 text-lg text-muted-foreground">
-        10 courses spanning Python, Java, C, TypeScript, Go, and theoretical proof-writing.
+        {courseList.length} courses spanning Python, Java, C, TypeScript, Go,
+        and theoretical proof-writing.
       </p>
 
-      <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {courseList.map((course) => (
-          <Link
-            key={course.id}
-            href={`/courses/${course.id}`}
-            className="group rounded-lg border bg-card p-6 transition-colors hover:bg-accent"
-          >
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  {course.displayName}
-                </p>
-                <h2 className="mt-1 text-lg font-semibold group-hover:text-accent-foreground">
+      <div className="mt-10">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Course</TableHead>
+              <TableHead>Title</TableHead>
+              <TableHead>Language</TableHead>
+              <TableHead className="text-right">Assignments</TableHead>
+              <TableHead className="text-right">Tests</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {courseList.map((course) => (
+              <TableRow key={course.id} className="group hover:bg-muted/50">
+                <TableCell className="font-medium">
+                  <Link
+                    href={`/courses/${course.id}`}
+                    className="hover:underline"
+                  >
+                    {course.displayName}
+                  </Link>
+                </TableCell>
+                <TableCell className="text-muted-foreground group-hover:text-foreground">
                   {course.title}
-                </h2>
-              </div>
-              <LanguageBadge language={course.language} hasWritten={course.hasWritten} />
-            </div>
-            <div className="mt-4 flex gap-6 text-sm text-muted-foreground">
-              <span>
-                {course.totalAssignments} assignment
-                {course.totalAssignments !== 1 ? "s" : ""}
-              </span>
-              <span>{course.totalTests} tests</span>
-            </div>
-          </Link>
-        ))}
+                </TableCell>
+                <TableCell>
+                  <LanguageBadge
+                    language={course.language}
+                    hasWritten={course.hasWritten}
+                  />
+                </TableCell>
+                <TableCell className="text-right text-muted-foreground group-hover:text-foreground">
+                  {course.totalAssignments}
+                </TableCell>
+                <TableCell className="text-right text-muted-foreground group-hover:text-foreground">
+                  {course.totalTests}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       </div>
     </div>
   );

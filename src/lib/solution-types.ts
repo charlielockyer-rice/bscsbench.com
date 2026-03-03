@@ -1,3 +1,6 @@
+/** Canonical set of languages treated as writeup (non-code) content. */
+export const WRITEUP_LANGUAGES = new Set(["markdown", "text", "plaintext"]);
+
 export interface SolutionFile {
   path: string;
   filename: string;

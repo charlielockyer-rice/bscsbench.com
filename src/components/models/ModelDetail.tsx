@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   ChevronRight,
   DollarSign,
@@ -29,7 +29,6 @@ export function ModelDetail({
   entry: BenchmarkEntry;
   courses: Record<string, CourseInfo>;
 }) {
-  const router = useRouter();
   const [expandedCourse, setExpandedCourse] = useState<string | null>(null);
 
   const courseEntries = Object.entries(entry.courses).sort(([a], [b]) =>
@@ -166,12 +165,20 @@ export function ModelDetail({
                               isOpen && "rotate-90"
                             )}
                           />
-                          <span className="font-medium">
+                          <Link
+                            href={`/courses/${courseId}`}
+                            className="font-medium hover:underline"
+                            onClick={(e) => e.stopPropagation()}
+                          >
                             {info?.displayName ?? courseId}
-                          </span>
-                          <span className="text-xs text-muted-foreground hidden sm:inline">
+                          </Link>
+                          <Link
+                            href={`/courses/${courseId}`}
+                            className="text-xs text-muted-foreground hidden sm:inline hover:underline"
+                            onClick={(e) => e.stopPropagation()}
+                          >
                             {info?.title}
-                          </span>
+                          </Link>
                           {courseData.letter && (
                             <Badge
                               variant="outline"
@@ -233,18 +240,15 @@ export function ModelDetail({
                         const hasWritten =
                           a.llmGrade?.status === "graded" &&
                           a.llmGrade.pointsEarned != null;
+                        const workHref = `/work/${a.id}`;
 
                         return (
                           <tr
                             key={a.id}
-                            className="border-t border-border/30 bg-muted/20 text-xs cursor-pointer hover:bg-muted/30"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              router.push(`/work/${a.id}`);
-                            }}
+                            className="border-t border-border/30 bg-muted/20 text-xs hover:bg-muted/30"
                           >
                               <td className="py-2 pr-4 pl-10">
-                                <div className="flex items-center gap-1.5 flex-wrap">
+                                <Link href={workHref} className="flex items-center gap-1.5 flex-wrap">
                                   <span>{a.displayName}</span>
                                   {a.weight > 1 && (
                                     <Badge variant="outline" className="px-1 py-0 text-[9px] font-mono">
@@ -259,24 +263,28 @@ export function ModelDetail({
                                   <span className="text-[10px] text-muted-foreground font-mono ml-1">
                                     {formatTokens(a.tokens)} tokens · {a.steps} turns
                                   </span>
-                                </div>
+                                </Link>
                               </td>
                               <td className="py-2 pl-3 pr-4 font-mono tabular-nums">
-                                {a.testsTotal === 0 ? (
-                                  <span className="text-muted-foreground">N/A</span>
-                                ) : (
-                                  `${a.testsPassed}/${a.testsTotal}`
-                                )}
+                                <Link href={workHref}>
+                                  {a.testsTotal === 0 ? (
+                                    <span className="text-muted-foreground">N/A</span>
+                                  ) : (
+                                    `${a.testsPassed}/${a.testsTotal}`
+                                  )}
+                                </Link>
                               </td>
                               <td className="py-2 pl-3 pr-4 font-mono tabular-nums">
-                                {hasWritten ? (
-                                  `${a.llmGrade!.pointsEarned}/${a.llmGrade!.pointsPossible}`
-                                ) : (
-                                  <span className="text-muted-foreground">N/A</span>
-                                )}
+                                <Link href={workHref}>
+                                  {hasWritten ? (
+                                    `${a.llmGrade!.pointsEarned}/${a.llmGrade!.pointsPossible}`
+                                  ) : (
+                                    <span className="text-muted-foreground">N/A</span>
+                                  )}
+                                </Link>
                               </td>
                               <td className="py-2 pl-3 pr-4">
-                                <div className="flex items-center gap-2">
+                                <Link href={workHref} className="flex items-center gap-2">
                                   <PassRateBar
                                     rate={a.score}
                                     className="w-20"
@@ -284,13 +292,17 @@ export function ModelDetail({
                                   <span className="font-mono tabular-nums">
                                     {formatPercent(a.score)}
                                   </span>
-                                </div>
+                                </Link>
                               </td>
                               <td className="py-2 pl-3 pr-4 text-right font-mono tabular-nums">
-                                {formatCost(a.cost)}
+                                <Link href={workHref} className="block">
+                                  {formatCost(a.cost)}
+                                </Link>
                               </td>
                               <td className="py-2 px-3 text-right font-mono tabular-nums">
-                                {formatTime(a.timeSeconds)}
+                                <Link href={workHref} className="block">
+                                  {formatTime(a.timeSeconds)}
+                                </Link>
                               </td>
                           </tr>
                         );

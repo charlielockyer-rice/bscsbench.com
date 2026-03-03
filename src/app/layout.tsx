@@ -18,7 +18,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "BSCS Bench — AI Agent Leaderboard",
   description:
-    "AI agents evaluated on 54 CS assignments across 9 Rice University courses.",
+    "AI agents evaluated on 54 CS assignments across 9 university courses.",
 };
 
 export default function RootLayout({

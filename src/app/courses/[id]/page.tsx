@@ -28,6 +28,7 @@ export default async function CourseDetailPage({
     .map((e) => {
       const c = e.courses[id];
       return {
+        modelId: e.model.id,
         model: e.model.name,
         logo: e.model.logo,
         provider: e.model.provider,
@@ -46,6 +47,8 @@ export default async function CourseDetailPage({
   const assignmentCards = assignmentBases.map((ab) => {
     const scores: number[] = [];
     let testCount = 0;
+    let best = 0;
+    let bestModel = "";
     for (const entry of data.entries) {
       const courseResult = entry.courses[id];
       if (!courseResult) continue;
@@ -55,10 +58,13 @@ export default async function CourseDetailPage({
       if (!assignment) continue;
       scores.push(assignment.score);
       if (testCount === 0) testCount = assignment.testsTotal;
+      if (assignment.score > best) {
+        best = assignment.score;
+        bestModel = entry.model.name;
+      }
     }
     const avg = scores.length > 0 ? scores.reduce((s, v) => s + v, 0) / scores.length : 0;
-    const best = scores.length > 0 ? Math.max(...scores) : 0;
-    return { ...ab, testCount, avg, best };
+    return { ...ab, testCount, avg, best, bestModel };
   });
 
   return (
@@ -95,7 +101,10 @@ export default async function CourseDetailPage({
                 <TableRow key={entry.model}>
                   <TableCell>{i + 1}</TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-2">
+                    <Link
+                      href={`/models/${entry.modelId}`}
+                      className="flex items-center gap-2 hover:underline"
+                    >
                       {entry.logo ? (
                         <img
                           src={entry.logo}
@@ -110,7 +119,7 @@ export default async function CourseDetailPage({
                         </span>
                       )}
                       <span className="font-medium">{entry.model}</span>
-                    </div>
+                    </Link>
                   </TableCell>
                   <TableCell className="text-right font-mono tabular-nums">
                     {entry.grade.toFixed(1)}% ({entry.letter})
@@ -150,7 +159,12 @@ export default async function CourseDetailPage({
                 <div className="mt-4 flex flex-wrap gap-x-6 gap-y-1 text-sm text-muted-foreground">
                   <span>{card.testCount} tests</span>
                   <span>Avg {card.avg.toFixed(0)}%</span>
-                  <span>Best {card.best.toFixed(0)}%</span>
+                  <span>
+                    Best {card.best.toFixed(0)}%
+                    {card.bestModel && (
+                      <span className="text-xs"> ({card.bestModel})</span>
+                    )}
+                  </span>
                 </div>
               </Link>
             ))}

@@ -24,10 +24,11 @@ export default async function BlogPostPage({
             We are excited to introduce BSCS Bench, a comprehensive benchmark
             for evaluating AI coding agents on real university programming
             assignments. Unlike synthetic benchmarks, BSCS Bench uses actual
-            coursework from 9 computer science courses at Rice University,
-            spanning Python, Java, C, and theoretical proof-writing. Each
-            assignment comes with the same autograder used to evaluate students,
-            providing a grounded and reproducible measure of agent capability.
+            coursework from 9 computer science courses, spanning Python, Java,
+            C, and theoretical proof-writing. Each assignment comes with the
+            same autograder used to evaluate students, providing a grounded and
+            reproducible measure of agent capability. BSCS Bench was created by
+            Charlie Lockyer and is not affiliated with Rice University.
           </p>
           <p>
             Our evaluation framework gives each agent the assignment

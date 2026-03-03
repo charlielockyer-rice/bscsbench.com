@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { WRITEUP_LANGUAGES } from "@/lib/solution-types";
 import { FileTree } from "./FileTree";
 
 type SolutionFile = {
@@ -23,8 +24,6 @@ function formatSize(bytes: number): string {
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
-
-const WRITEUP_LANGUAGES = new Set(["markdown", "text", "plaintext"]);
 
 export function SolutionViewer({ files }: SolutionViewerProps) {
   const defaultPath = useMemo(() => {

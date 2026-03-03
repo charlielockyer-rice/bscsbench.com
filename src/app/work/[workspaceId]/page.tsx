@@ -1,9 +1,9 @@
-import { readFileSync, existsSync } from "fs";
+import { readFile } from "fs/promises";
 import { join } from "path";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import { getEntryByWorkspaceId, getAssignmentBase } from "@/lib/data";
+import { getEntryByWorkspaceId, getAssignmentBase, getBenchmarkData } from "@/lib/data";
 import { highlightCode, highlightMarkdownBlocks, getLangForFile } from "@/lib/shiki";
 import type { SolutionData } from "@/lib/solution-types";
 import type { ProcessedTrace, TraceSummary, TraceMetadata } from "@/lib/trace-types";
@@ -18,7 +18,7 @@ import { ModelUsageTable } from "@/components/work/ModelUsageTable";
 import { WorkTabs } from "@/components/work/WorkTabs";
 import { MarkdownWithToc } from "@/components/work/MarkdownWithToc";
 
-const WRITEUP_LANGS = new Set(["markdown", "text", "plaintext", "txt", "md"]);
+import { WRITEUP_LANGUAGES } from "@/lib/solution-types";
 
 export default async function WorkPage({
   params,
@@ -30,45 +30,28 @@ export default async function WorkPage({
 
   if (!context) return notFound();
 
-  const solutionPath = join(
-    process.cwd(),
-    "public",
-    "solutions",
-    workspaceId + ".json"
-  );
-
-  let solution: SolutionData | null = null;
-  if (existsSync(solutionPath)) {
-    solution = JSON.parse(readFileSync(solutionPath, "utf-8")) as SolutionData;
-  }
-
-  const tracePath = join(process.cwd(), "public", "traces", workspaceId + ".json");
-  let traceSummary: TraceSummary | null = null;
-  let traceMetadata: TraceMetadata | null = null;
-  if (existsSync(tracePath)) {
-    const trace = JSON.parse(readFileSync(tracePath, "utf-8")) as ProcessedTrace;
-    traceSummary = trace.summary;
-    traceMetadata = trace.metadata;
-  }
-
-  const agentMetaPath = join(process.cwd(), "public", "agent-meta", workspaceId + ".json");
-  let agentMeta: AgentMeta | null = null;
-  if (existsSync(agentMetaPath)) {
-    agentMeta = JSON.parse(readFileSync(agentMetaPath, "utf-8")) as AgentMeta;
-  }
-
   const assignmentBase = getAssignmentBase(workspaceId);
-  const assignmentPath = join(process.cwd(), "public", "assignments", assignmentBase + ".json");
-  let assignmentData: AssignmentData | null = null;
-  if (existsSync(assignmentPath)) {
-    assignmentData = JSON.parse(readFileSync(assignmentPath, "utf-8")) as AssignmentData;
-  }
+  const base = join(process.cwd(), "public");
+
+  const [solutionRaw, traceRaw, agentMetaRaw, assignmentRaw] = await Promise.all([
+    readFile(join(base, "solutions", workspaceId + ".json"), "utf-8").catch(() => null),
+    readFile(join(base, "traces", workspaceId + ".json"), "utf-8").catch(() => null),
+    readFile(join(base, "agent-meta", workspaceId + ".json"), "utf-8").catch(() => null),
+    readFile(join(base, "assignments", assignmentBase + ".json"), "utf-8").catch(() => null),
+  ]);
+
+  const solution = solutionRaw ? (JSON.parse(solutionRaw) as SolutionData) : null;
+  const trace = traceRaw ? (JSON.parse(traceRaw) as ProcessedTrace) : null;
+  const traceSummary: TraceSummary | null = trace?.summary ?? null;
+  const traceMetadata: TraceMetadata | null = trace?.metadata ?? null;
+  const agentMeta = agentMetaRaw ? (JSON.parse(agentMetaRaw) as AgentMeta) : null;
+  const assignmentData = assignmentRaw ? (JSON.parse(assignmentRaw) as AssignmentData) : null;
 
   const assignment = context.assignment;
 
   // Separate code files from writeup-only files
   const codeFiles = solution?.files.filter(
-    (f) => !WRITEUP_LANGS.has(f.language.toLowerCase())
+    (f) => !WRITEUP_LANGUAGES.has(f.language.toLowerCase())
   ) ?? [];
 
   const highlightedFiles = codeFiles.length > 0
@@ -113,10 +96,31 @@ export default async function WorkPage({
       )
     : [];
 
+  // Pre-highlight code blocks in instructions markdown
+  const instructionBlocks = assignmentData?.instructions
+    ? await highlightMarkdownBlocks(assignmentData.instructions)
+    : undefined;
+
   // Pre-highlight code blocks in writeup markdown
   const writeupBlocks = solution?.writeup?.format === "md"
     ? await highlightMarkdownBlocks(solution.writeup.content)
     : undefined;
+
+  // Look up course display name for the subtitle
+  const benchData = getBenchmarkData();
+  let courseDisplayName: string | undefined;
+  const entry = benchData.entries.find((e) => e.model.id === context.modelId);
+  if (entry) {
+    for (const course of Object.values(entry.courses)) {
+      if (course.assignments.some((a) => a.id === workspaceId)) {
+        const courseInfo = benchData.courses[course.courseId];
+        if (courseInfo) {
+          courseDisplayName = `${courseInfo.displayName}: ${courseInfo.title}`;
+        }
+        break;
+      }
+    }
+  }
 
   return (
     <div className="mx-auto max-w-[1800px] px-4 py-12 sm:px-6 lg:px-[5%]">
@@ -133,7 +137,8 @@ export default async function WorkPage({
           Agent Work: {context.assignmentName}
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
-          {context.modelName} &middot; {workspaceId}
+          {context.modelName}
+          {courseDisplayName && <> &middot; {courseDisplayName}</>}
         </p>
       </div>
 
@@ -144,7 +149,10 @@ export default async function WorkPage({
             label: "Instructions",
             disabled: !assignmentData?.instructions,
             content: assignmentData?.instructions ? (
-              <MarkdownWithToc text={assignmentData.instructions} />
+              <MarkdownWithToc
+                text={assignmentData.instructions}
+                highlightedBlocks={instructionBlocks}
+              />
             ) : null,
           },
           {

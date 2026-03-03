@@ -19,7 +19,7 @@ export function WorkTabs({ tabs }: { tabs: Tab[] }) {
 
   return (
     <>
-      <nav className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b">
+      <nav className="sticky top-14 z-10 bg-background/95 backdrop-blur border-b">
         <div className="flex gap-1 py-2 overflow-x-auto">
           {visibleTabs.map((tab) => (
             <button
