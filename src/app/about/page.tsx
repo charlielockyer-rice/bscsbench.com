@@ -12,7 +12,11 @@ import { LanguageBadge } from "@/components/courses/LanguageBadge";
 
 export default function AboutPage() {
   const { courses } = getBenchmarkData();
-  const courseList = Object.values(courses);
+  const courseList = Object.values(courses).sort((a, b) => {
+    const numA = parseInt(a.id.replace(/\D/g, ""));
+    const numB = parseInt(b.id.replace(/\D/g, ""));
+    return numA - numB;
+  });
 
   return (
     <div className="mx-auto max-w-[1800px] px-4 py-12 sm:px-6 lg:px-[5%]">

@@ -1,3 +1,5 @@
+import { renderMarkdownLite } from "@/components/traces/markdown-lite";
+
 interface GraderReviewProps {
   graderReview: { content: string } | null;
 }
@@ -12,8 +14,8 @@ export function GraderReview({ graderReview }: GraderReviewProps) {
   }
 
   return (
-    <pre className="font-mono text-sm whitespace-pre-wrap leading-relaxed">
-      {graderReview.content}
-    </pre>
+    <div className="text-sm leading-relaxed space-y-2">
+      {renderMarkdownLite(graderReview.content)}
+    </div>
   );
 }
