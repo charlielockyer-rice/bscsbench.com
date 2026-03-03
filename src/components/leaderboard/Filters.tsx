@@ -1,8 +1,16 @@
 "use client";
 
-import { Search } from "lucide-react";
+import { Search, ChevronDown, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuCheckboxItem,
+  DropdownMenuSeparator,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export function Filters({
   tags,
@@ -63,18 +71,43 @@ export function Filters({
       )}
 
       {courseIds.length > 0 && (
-        <div className="flex flex-wrap items-center gap-1.5">
-          {courseIds.map((id) => (
-            <Badge
-              key={id}
-              variant={selectedCourses.includes(id) ? "default" : "outline"}
-              className={cn("cursor-pointer select-none text-xs")}
-              onClick={() => toggleCourse(id)}
-            >
-              {courseNames[id] ?? id}
-            </Badge>
-          ))}
-        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" className="gap-1.5">
+              Courses
+              {selectedCourses.length > 0 && (
+                <Badge variant="secondary" className="ml-0.5 px-1.5 py-0 text-[10px] leading-4">
+                  {selectedCourses.length}
+                </Badge>
+              )}
+              <ChevronDown className="size-3.5" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-56">
+            {courseIds.map((id) => (
+              <DropdownMenuCheckboxItem
+                key={id}
+                checked={selectedCourses.includes(id)}
+                onSelect={(e) => e.preventDefault()}
+                onCheckedChange={() => toggleCourse(id)}
+              >
+                {courseNames[id] ?? id}
+              </DropdownMenuCheckboxItem>
+            ))}
+            {selectedCourses.length > 0 && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onSelect={() => onCoursesChange([])}
+                  className="justify-center text-xs text-muted-foreground"
+                >
+                  <X className="size-3" />
+                  Clear all
+                </DropdownMenuItem>
+              </>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
       )}
 
       <div className="relative ml-auto">

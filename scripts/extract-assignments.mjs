@@ -25,6 +25,16 @@ function stripLineNumbers(text) {
   return text.replace(/^ *\d+→/gm, "");
 }
 
+function stripPersistedOutput(text) {
+  // Claude Code wraps large outputs in <persisted-output>...\nPreview (first 2KB):\n...actual content...</persisted-output>
+  const match = text.match(/<persisted-output>\s*Output too large[^\n]*\n\nPreview \(first \d+KB\):\n([\s\S]*?)<\/persisted-output>/);
+  if (match) return match[1].trim();
+  // Also handle simpler wrapper without preview header
+  const simple = text.match(/<persisted-output>\s*([\s\S]*?)<\/persisted-output>/);
+  if (simple) return simple[1].trim();
+  return text;
+}
+
 function getAssignmentBase(workspaceId) {
   // Strip model suffixes: comp140_circles_opus -> comp140_circles
   return workspaceId
@@ -53,11 +63,11 @@ function extractFromTrace(tracePath) {
 
       if (call.name === "Read") {
         const filePath = call.input?.file_path || "";
-        const output = call.output || "";
-        if (!output || output.length < 20) continue;
+        const rawOutput = call.output || "";
+        if (!rawOutput || rawOutput.length < 20) continue;
 
         const cleanPath = stripPaths(filePath).replace(/^\.\//, "");
-        const content = stripLineNumbers(stripPaths(output));
+        const content = stripLineNumbers(stripPaths(stripPersistedOutput(rawOutput)));
 
         // Instructions file — concatenate chunked reads, skip errors
         if (cleanPath.includes("instructions")) {

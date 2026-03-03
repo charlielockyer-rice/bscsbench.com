@@ -198,6 +198,36 @@ function transformRun(run: ArchiveRun): BenchmarkEntry {
   };
 }
 
+/**
+ * Strip the model suffix from a workspace id to get the assignment base name.
+ * Must stay in sync with scripts/extract-assignments.mjs:getAssignmentBase().
+ * Update both when adding new model runs with different workspace-id suffixes.
+ */
+export function getAssignmentBase(workspaceId: string): string {
+  return workspaceId
+    .replace(/_opus$/, "")
+    .replace(/_haiku$/, "")
+    .replace(/_sonnet$/, "");
+}
+
+/** Get the list of assignments for a given course, derived from any entry's course data. */
+export function getAssignmentBasesForCourse(
+  courseId: string
+): { base: string; number: number; displayName: string }[] {
+  const data = getBenchmarkData();
+  // Find the first entry that has this course
+  for (const entry of data.entries) {
+    const course = entry.courses[courseId];
+    if (!course) continue;
+    return course.assignments.map((a) => ({
+      base: getAssignmentBase(a.id),
+      number: a.number,
+      displayName: a.displayName,
+    }));
+  }
+  return [];
+}
+
 let cached: BenchmarkData | null = null;
 
 export function getEntryByModelId(modelId: string): BenchmarkEntry | null {

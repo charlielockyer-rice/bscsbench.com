@@ -21,6 +21,25 @@ const diffLineTransformer: ShikiTransformer = {
   },
 };
 
+const EXT_LANG_MAP: Record<string, string> = {
+  py: "python",
+  java: "java",
+  c: "c",
+  h: "c",
+  ts: "typescript",
+  go: "go",
+  css: "css",
+  html: "html",
+  md: "markdown",
+};
+
+/** Map a filename (or extension) to a shiki language id. */
+export function getLangForFile(filename: string): string {
+  if (filename === "Makefile") return "makefile";
+  const ext = filename.split(".").pop() ?? "";
+  return EXT_LANG_MAP[ext] ?? "text";
+}
+
 let highlighter: Highlighter | null = null;
 
 export async function getHighlighter(): Promise<Highlighter> {

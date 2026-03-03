@@ -3,11 +3,12 @@ import { join } from "path";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import { getEntryByWorkspaceId } from "@/lib/data";
-import { highlightCode, highlightMarkdownBlocks } from "@/lib/shiki";
+import { getEntryByWorkspaceId, getAssignmentBase } from "@/lib/data";
+import { highlightCode, highlightMarkdownBlocks, getLangForFile } from "@/lib/shiki";
 import type { SolutionData } from "@/lib/solution-types";
 import type { ProcessedTrace, TraceSummary, TraceMetadata } from "@/lib/trace-types";
 import type { AgentMeta } from "@/lib/agent-meta-types";
+import type { AssignmentData } from "@/lib/assignment-types";
 import { SolutionViewer } from "@/components/work/SolutionViewer";
 import { WriteupSection } from "@/components/work/WriteupSection";
 import { GraderReview } from "@/components/work/GraderReview";
@@ -17,20 +18,7 @@ import { ModelUsageTable } from "@/components/work/ModelUsageTable";
 import { WorkTabs } from "@/components/work/WorkTabs";
 import { MarkdownWithToc } from "@/components/work/MarkdownWithToc";
 
-interface AssignmentData {
-  assignmentBase: string;
-  instructions: string;
-  providedFiles: { path: string; filename: string; content: string }[];
-}
-
 const WRITEUP_LANGS = new Set(["markdown", "text", "plaintext", "txt", "md"]);
-
-function getAssignmentBase(workspaceId: string): string {
-  return workspaceId
-    .replace(/_opus$/, "")
-    .replace(/_haiku$/, "")
-    .replace(/_sonnet$/, "");
-}
 
 export default async function WorkPage({
   params,
@@ -112,18 +100,7 @@ export default async function WorkPage({
   const highlightedProvided = assignmentData?.providedFiles.length
     ? await Promise.all(
         assignmentData.providedFiles.map(async (file) => {
-          const ext = file.filename.split(".").pop() ?? "";
-          const langMap: Record<string, string> = {
-            py: "python",
-            java: "java",
-            c: "c",
-            h: "c",
-            ts: "typescript",
-            go: "go",
-            css: "css",
-            html: "html",
-          };
-          const lang = file.filename === "Makefile" ? "makefile" : (langMap[ext] ?? "text");
+          const lang = getLangForFile(file.filename);
           return {
             path: file.path,
             filename: file.filename,
