@@ -75,7 +75,7 @@ export function LeaderboardRow({
             <ChevronRight className="size-3.5 text-muted-foreground" />
             <span
               className={cn(
-                "font-mono tabular-nums text-sm font-bold w-6 text-center",
+                "tabular-nums text-sm font-bold w-6 text-center",
                 rankStyle(rank)
               )}
             >
@@ -119,19 +119,19 @@ export function LeaderboardRow({
         <td className="p-2 align-middle">
           <Link href={href}>
             <div className="flex flex-col">
-              <span className="font-mono tabular-nums text-sm font-semibold">
+              <span className="tabular-nums text-sm font-semibold">
                 {formatPercent(entry.scores.overall)}
               </span>
-              <span className="font-mono tabular-nums text-xs text-muted-foreground">
+              <span className="tabular-nums text-xs text-muted-foreground">
                 {formatGpa(entry.scores.gpa)} GPA
               </span>
             </div>
           </Link>
         </td>
-        <td className="p-2 align-middle font-mono tabular-nums text-sm hidden md:table-cell">
+        <td className="p-2 align-middle tabular-nums text-sm hidden md:table-cell">
           <Link href={href}>{formatTime(entry.totals.durationMs / 1000)}</Link>
         </td>
-        <td className="p-2 align-middle font-mono tabular-nums text-sm hidden md:table-cell">
+        <td className="p-2 align-middle tabular-nums text-sm hidden md:table-cell">
           <Link href={href}>{formatCost(entry.totals.costUsd)}</Link>
         </td>
         <td className="p-2 align-middle text-sm text-muted-foreground hidden md:table-cell">
@@ -155,7 +155,7 @@ export function LeaderboardRow({
               <div className="flex items-center gap-2.5">
                 <span
                   className={cn(
-                    "font-mono tabular-nums text-lg font-bold",
+                    "tabular-nums text-lg font-bold",
                     rankStyle(rank)
                   )}
                 >
@@ -199,10 +199,10 @@ export function LeaderboardRow({
                 </div>
               </div>
               <div className="text-right">
-                <div className="font-mono tabular-nums text-lg font-semibold">
+                <div className="tabular-nums text-lg font-semibold">
                   {formatPercent(entry.scores.overall)}
                 </div>
-                <div className="font-mono tabular-nums text-xs text-muted-foreground">
+                <div className="tabular-nums text-xs text-muted-foreground">
                   {formatTime(entry.totals.durationMs / 1000)}
                 </div>
               </div>
@@ -210,7 +210,7 @@ export function LeaderboardRow({
 
             <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
               <div className="flex gap-3">
-                <span className="font-mono tabular-nums">
+                <span className="tabular-nums">
                   {formatCost(entry.totals.costUsd)}
                 </span>
                 <span>{formatRelativeDate(entry.date)}</span>

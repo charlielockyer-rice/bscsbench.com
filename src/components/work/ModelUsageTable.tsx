@@ -20,10 +20,10 @@ export function ModelUsageTable({ usage }: { usage: ModelUsageEntry[] }) {
           {usage.map((u) => (
             <tr key={u.model} className="border-t border-border/50">
               <td className="p-3 font-mono text-xs">{u.model}</td>
-              <td className="p-3 text-right font-mono tabular-nums">{formatTokens(u.inputTokens)}</td>
-              <td className="p-3 text-right font-mono tabular-nums">{formatTokens(u.outputTokens)}</td>
-              <td className="p-3 text-right font-mono tabular-nums">{formatTokens(u.cacheReadTokens)}</td>
-              <td className="p-3 text-right font-mono tabular-nums">{formatCost(u.costUsd)}</td>
+              <td className="p-3 text-right tabular-nums">{formatTokens(u.inputTokens)}</td>
+              <td className="p-3 text-right tabular-nums">{formatTokens(u.outputTokens)}</td>
+              <td className="p-3 text-right tabular-nums">{formatTokens(u.cacheReadTokens)}</td>
+              <td className="p-3 text-right tabular-nums">{formatCost(u.costUsd)}</td>
             </tr>
           ))}
         </tbody>

@@ -20,7 +20,7 @@ export function StatCard({
         <Icon className="size-4" />
         {label}
       </div>
-      <div className={cn("mt-1 text-2xl font-bold font-mono tabular-nums", valueClassName)}>
+      <div className={cn("mt-1 text-2xl font-bold tabular-nums", valueClassName)}>
         {value}
       </div>
       {sublabel && (

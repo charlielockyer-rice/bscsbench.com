@@ -123,16 +123,16 @@ export default async function CourseDetailPage({
                       <span className="font-medium">{entry.model}</span>
                     </Link>
                   </TableCell>
-                  <TableCell className="text-right font-mono tabular-nums">
+                  <TableCell className="text-right tabular-nums">
                     {entry.grade.toFixed(1)}% ({entry.letter})
                   </TableCell>
-                  <TableCell className="text-right font-mono tabular-nums">
+                  <TableCell className="text-right tabular-nums">
                     {entry.passRate.toFixed(1)}%
                   </TableCell>
-                  <TableCell className="text-right font-mono tabular-nums">
+                  <TableCell className="text-right tabular-nums">
                     {entry.solved}/{entry.total}
                   </TableCell>
-                  <TableCell className="text-right font-mono tabular-nums">
+                  <TableCell className="text-right tabular-nums">
                     ${entry.cost.toFixed(2)}
                   </TableCell>
                 </TableRow>
@@ -151,7 +151,7 @@ export default async function CourseDetailPage({
             >
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 min-w-0">
-                  <span className="font-mono tabular-nums text-sm font-bold w-5 shrink-0 text-muted-foreground">
+                  <span className="tabular-nums text-sm font-bold w-5 shrink-0 text-muted-foreground">
                     {i + 1}
                   </span>
                   {entry.logo ? (
@@ -171,7 +171,7 @@ export default async function CourseDetailPage({
                     {entry.model}
                   </span>
                 </div>
-                <span className="font-mono tabular-nums text-sm font-semibold shrink-0">
+                <span className="tabular-nums text-sm font-semibold shrink-0">
                   {entry.grade.toFixed(1)}%
                   <span className="text-muted-foreground ml-1">
                     ({entry.letter})
@@ -179,13 +179,13 @@ export default async function CourseDetailPage({
                 </span>
               </div>
               <div className="mt-1 ml-7 flex gap-4 text-xs text-muted-foreground">
-                <span className="font-mono tabular-nums">
+                <span className="tabular-nums">
                   Pass {entry.passRate.toFixed(1)}%
                 </span>
-                <span className="font-mono tabular-nums">
+                <span className="tabular-nums">
                   {entry.solved}/{entry.total} solved
                 </span>
-                <span className="font-mono tabular-nums">
+                <span className="tabular-nums">
                   ${entry.cost.toFixed(2)}
                 </span>
               </div>

@@ -29,7 +29,16 @@ export function ModelDetail({
   entry: BenchmarkEntry;
   courses: Record<string, CourseInfo>;
 }) {
-  const [expandedCourse, setExpandedCourse] = useState<string | null>(null);
+  const [expandedCourses, setExpandedCourses] = useState<Set<string>>(new Set());
+
+  function toggleCourse(courseId: string) {
+    setExpandedCourses(prev => {
+      const next = new Set(prev);
+      if (next.has(courseId)) next.delete(courseId);
+      else next.add(courseId);
+      return next;
+    });
+  }
 
   const courseEntries = Object.entries(entry.courses).sort(([a], [b]) =>
     a.localeCompare(b)
@@ -90,10 +99,10 @@ export function ModelDetail({
         </div>
         <div className="flex items-center gap-6">
           <div className="text-right">
-            <div className="text-4xl font-bold font-mono tabular-nums">
+            <div className="text-4xl font-bold tabular-nums">
               {formatPercent(entry.scores.overall)}
             </div>
-            <div className="text-sm text-muted-foreground font-mono tabular-nums">
+            <div className="text-sm text-muted-foreground tabular-nums">
               {formatGpa(entry.scores.gpa)} GPA &middot;{" "}
               {entry.scores.overallLetter}
             </div>
@@ -160,14 +169,14 @@ export function ModelDetail({
             <tbody>
               {courseEntries.map(([courseId, courseData]) => {
                 const info = courses[courseId];
-                const isOpen = expandedCourse === courseId;
+                const isOpen = expandedCourses.has(courseId);
 
                 return (
                   <React.Fragment key={courseId}>
                     <tr
                       className="cursor-pointer border-t border-border/50 hover:bg-muted/30"
                       onClick={() =>
-                        setExpandedCourse(isOpen ? null : courseId)
+                        toggleCourse(courseId)
                       }
                     >
                       <td className="p-3 pr-4">
@@ -195,26 +204,26 @@ export function ModelDetail({
                           {courseData.letter && (
                             <Badge
                               variant="outline"
-                              className="px-1.5 py-0 text-[10px] font-mono"
+                              className="px-1.5 py-0 text-[10px]"
                             >
                               {courseData.letter}
                             </Badge>
                           )}
                           {courseData.creditHours > 0 && (
-                            <Badge variant="outline" className="px-1 py-0 text-[9px] font-mono text-muted-foreground">
+                            <Badge variant="outline" className="px-1 py-0 text-[9px] text-muted-foreground">
                               {courseData.creditHours}cr
                             </Badge>
                           )}
                         </div>
                       </td>
-                      <td className="p-3 pr-4 font-mono tabular-nums">
+                      <td className="p-3 pr-4 tabular-nums">
                         {courseData.testsTotal === 0 ? (
                           <span className="text-muted-foreground">N/A</span>
                         ) : (
                           `${courseData.testsPassed}/${courseData.testsTotal}`
                         )}
                       </td>
-                      <td className="p-3 pr-4 font-mono tabular-nums">
+                      <td className="p-3 pr-4 tabular-nums">
                         {(() => {
                           const { earned, possible } = getWrittenTotals(courseData.assignments);
                           return possible === 0 ? (
@@ -230,15 +239,15 @@ export function ModelDetail({
                             rate={courseData.grade}
                             className="w-20"
                           />
-                          <span className="font-mono tabular-nums text-xs">
+                          <span className="tabular-nums text-xs">
                             {formatPercent(courseData.grade)}
                           </span>
                         </div>
                       </td>
-                      <td className="p-3 pr-4 text-right font-mono tabular-nums">
+                      <td className="p-3 pr-4 text-right tabular-nums">
                         {formatCost(courseData.totalCost)}
                       </td>
-                      <td className="p-3 text-right font-mono tabular-nums">
+                      <td className="p-3 text-right tabular-nums">
                         {formatTime(courseData.totalTimeSeconds)}
                       </td>
                     </tr>
@@ -258,21 +267,21 @@ export function ModelDetail({
                                 <Link href={workHref} className="flex items-center gap-1.5 flex-wrap">
                                   <span>{a.displayName}</span>
                                   {a.weight > 1 && (
-                                    <Badge variant="outline" className="px-1 py-0 text-[9px] font-mono">
+                                    <Badge variant="outline" className="px-1 py-0 text-[9px]">
                                       {a.weight}x
                                     </Badge>
                                   )}
                                   {a.isTimeout && (
-                                    <Badge variant="outline" className="px-1 py-0 text-[9px] font-mono text-[oklch(0.75_0.15_75)]">
+                                    <Badge variant="outline" className="px-1 py-0 text-[9px] text-[oklch(0.75_0.15_75)]">
                                       timeout
                                     </Badge>
                                   )}
-                                  <span className="text-[10px] text-muted-foreground font-mono ml-1">
+                                  <span className="text-[10px] text-muted-foreground ml-1">
                                     {formatTokens(a.tokens)} tokens · {a.steps} turns
                                   </span>
                                 </Link>
                               </td>
-                              <td className="py-2 pl-3 pr-4 font-mono tabular-nums">
+                              <td className="py-2 pl-3 pr-4 tabular-nums">
                                 <Link href={workHref}>
                                   {a.testsTotal === 0 ? (
                                     <span className="text-muted-foreground">N/A</span>
@@ -281,7 +290,7 @@ export function ModelDetail({
                                   )}
                                 </Link>
                               </td>
-                              <td className="py-2 pl-3 pr-4 font-mono tabular-nums">
+                              <td className="py-2 pl-3 pr-4 tabular-nums">
                                 <Link href={workHref}>
                                   {hasWritten ? (
                                     `${a.llmGrade!.pointsEarned}/${a.llmGrade!.pointsPossible}`
@@ -296,17 +305,17 @@ export function ModelDetail({
                                     rate={a.score}
                                     className="w-20"
                                   />
-                                  <span className="font-mono tabular-nums">
+                                  <span className="tabular-nums">
                                     {formatPercent(a.score)}
                                   </span>
                                 </Link>
                               </td>
-                              <td className="py-2 pl-3 pr-4 text-right font-mono tabular-nums">
+                              <td className="py-2 pl-3 pr-4 text-right tabular-nums">
                                 <Link href={workHref} className="block">
                                   {formatCost(a.cost)}
                                 </Link>
                               </td>
-                              <td className="py-2 px-3 text-right font-mono tabular-nums">
+                              <td className="py-2 px-3 text-right tabular-nums">
                                 <Link href={workHref} className="block">
                                   {formatTime(a.timeSeconds)}
                                 </Link>
@@ -325,7 +334,7 @@ export function ModelDetail({
         <div className="md:hidden space-y-2">
           {courseEntries.map(([courseId, courseData]) => {
             const info = courses[courseId];
-            const isOpen = expandedCourse === courseId;
+            const isOpen = expandedCourses.has(courseId);
 
             const { earned: writtenEarned, possible: writtenPossible } = getWrittenTotals(courseData.assignments);
 
@@ -334,7 +343,7 @@ export function ModelDetail({
                 <div
                   className="cursor-pointer p-3 hover:bg-muted/30"
                   onClick={() =>
-                    setExpandedCourse(isOpen ? null : courseId)
+                    toggleCourse(courseId)
                   }
                 >
                   <div className="flex items-center justify-between gap-2">
@@ -355,7 +364,7 @@ export function ModelDetail({
                       {courseData.letter && (
                         <Badge
                           variant="outline"
-                          className="px-1.5 py-0 text-[10px] font-mono shrink-0"
+                          className="px-1.5 py-0 text-[10px] shrink-0"
                         >
                           {courseData.letter}
                         </Badge>
@@ -363,12 +372,12 @@ export function ModelDetail({
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
                       <PassRateBar rate={courseData.grade} className="w-16" />
-                      <span className="font-mono tabular-nums text-xs">
+                      <span className="tabular-nums text-xs">
                         {formatPercent(courseData.grade)}
                       </span>
                     </div>
                   </div>
-                  <div className="mt-1.5 ml-6 flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-muted-foreground font-mono tabular-nums">
+                  <div className="mt-1.5 ml-6 flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-muted-foreground tabular-nums">
                     {courseData.testsTotal > 0 && (
                       <span>Tests {courseData.testsPassed}/{courseData.testsTotal}</span>
                     )}
@@ -397,24 +406,24 @@ export function ModelDetail({
                             <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
                               <span className="text-xs truncate">{a.displayName}</span>
                               {a.weight > 1 && (
-                                <Badge variant="outline" className="px-1 py-0 text-[9px] font-mono">
+                                <Badge variant="outline" className="px-1 py-0 text-[9px]">
                                   {a.weight}x
                                 </Badge>
                               )}
                               {a.isTimeout && (
-                                <Badge variant="outline" className="px-1 py-0 text-[9px] font-mono text-[oklch(0.75_0.15_75)]">
+                                <Badge variant="outline" className="px-1 py-0 text-[9px] text-[oklch(0.75_0.15_75)]">
                                   timeout
                                 </Badge>
                               )}
                             </div>
                             <div className="flex items-center gap-2 shrink-0">
                               <PassRateBar rate={a.score} className="w-12" />
-                              <span className="font-mono tabular-nums text-xs">
+                              <span className="tabular-nums text-xs">
                                 {formatPercent(a.score)}
                               </span>
                             </div>
                           </div>
-                          <div className="mt-0.5 flex flex-wrap gap-x-3 text-[10px] text-muted-foreground font-mono tabular-nums">
+                          <div className="mt-0.5 flex flex-wrap gap-x-3 text-[10px] text-muted-foreground tabular-nums">
                             {a.testsTotal > 0 && (
                               <span>{a.testsPassed}/{a.testsTotal} tests</span>
                             )}

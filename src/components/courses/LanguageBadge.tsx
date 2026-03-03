@@ -10,7 +10,7 @@ const LANGUAGE_LOGOS: Record<string, { src: string; label: string; className?: s
   c: { src: "/logos/c.svg", label: "C" },
   typescript: { src: "/logos/typescript.svg", label: "TypeScript" },
   go: { src: "/logos/go.svg", label: "Go" },
-  proof: { src: "/logos/proof.svg", label: "Written" },
+  proof: { src: "/logos/writing.png", label: "Written" },
 };
 
 export function LanguageBadge({
@@ -41,7 +41,7 @@ export function LanguageBadge({
         {hasWritten && (
           <Tooltip>
             <TooltipTrigger asChild>
-              <img src={LANGUAGE_LOGOS.proof.src} alt={LANGUAGE_LOGOS.proof.label} className="size-7" />
+              <img src={LANGUAGE_LOGOS.proof.src} alt={LANGUAGE_LOGOS.proof.label} className="size-9" />
             </TooltipTrigger>
             <TooltipContent>Written</TooltipContent>
           </Tooltip>
@@ -82,7 +82,7 @@ export function LanguageBadge({
       </Tooltip>
       <Tooltip>
         <TooltipTrigger asChild>
-          <img src={proofLogo.src} alt={proofLogo.label} className="size-7" />
+          <img src={proofLogo.src} alt={proofLogo.label} className="size-9" />
         </TooltipTrigger>
         <TooltipContent>Written</TooltipContent>
       </Tooltip>

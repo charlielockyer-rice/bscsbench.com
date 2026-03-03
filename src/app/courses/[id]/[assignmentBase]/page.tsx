@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 import { getBenchmarkData, getAssignmentBasesForCourse } from "@/lib/data";
+import { formatTime } from "@/lib/formatting";
 import { highlightCode, highlightMarkdownBlocks, getLangForFile } from "@/lib/shiki";
 import type { AssignmentData } from "@/lib/assignment-types";
 import { LanguageBadge } from "@/components/courses/LanguageBadge";
@@ -183,18 +184,16 @@ export default async function AssignmentDetailPage({
                               </Link>
                             </div>
                           </TableCell>
-                          <TableCell className="text-right font-mono tabular-nums">
+                          <TableCell className="text-right tabular-nums">
                             {entry.score.toFixed(1)}%
                           </TableCell>
-                          <TableCell className="text-right font-mono tabular-nums">
+                          <TableCell className="text-right tabular-nums">
                             {entry.testsPassed}/{entry.testsTotal}
                           </TableCell>
-                          <TableCell className="text-right font-mono tabular-nums">
-                            {entry.timeSeconds < 60
-                              ? `${entry.timeSeconds.toFixed(0)}s`
-                              : `${(entry.timeSeconds / 60).toFixed(1)}m`}
+                          <TableCell className="text-right tabular-nums">
+                            {formatTime(entry.timeSeconds)}
                           </TableCell>
-                          <TableCell className="text-right font-mono tabular-nums">
+                          <TableCell className="text-right tabular-nums">
                             ${entry.cost.toFixed(2)}
                           </TableCell>
                         </TableRow>
@@ -209,7 +208,7 @@ export default async function AssignmentDetailPage({
                     <div key={entry.model} className="py-3 first:pt-0">
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2 min-w-0">
-                          <span className="font-mono tabular-nums text-sm font-bold w-5 shrink-0 text-muted-foreground">
+                          <span className="tabular-nums text-sm font-bold w-5 shrink-0 text-muted-foreground">
                             {i + 1}
                           </span>
                           <Link
@@ -241,20 +240,20 @@ export default async function AssignmentDetailPage({
                             <ExternalLink className="size-3.5" />
                           </Link>
                         </div>
-                        <span className="font-mono tabular-nums text-sm font-semibold shrink-0">
+                        <span className="tabular-nums text-sm font-semibold shrink-0">
                           {entry.score.toFixed(1)}%
                         </span>
                       </div>
                       <div className="mt-1 ml-7 flex gap-4 text-xs text-muted-foreground">
-                        <span className="font-mono tabular-nums">
+                        <span className="tabular-nums">
                           {entry.testsPassed}/{entry.testsTotal} tests
                         </span>
-                        <span className="font-mono tabular-nums">
+                        <span className="tabular-nums">
                           {entry.timeSeconds < 60
                             ? `${entry.timeSeconds.toFixed(0)}s`
                             : `${(entry.timeSeconds / 60).toFixed(1)}m`}
                         </span>
-                        <span className="font-mono tabular-nums">
+                        <span className="tabular-nums">
                           ${entry.cost.toFixed(2)}
                         </span>
                       </div>
