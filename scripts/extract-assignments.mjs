@@ -1,14 +1,19 @@
 #!/usr/bin/env node
 
 /**
- * Extracts assignment instructions and provided files from agent traces.
- * Instructions are the same across models, so we extract from one trace per assignment.
- * Provided files are the files the agent reads before making any edits (turn 0).
+ * Extracts assignment instructions and provided files.
+ *
+ * Instructions: prefer the `instructions.md` bundled in tar.gz archives (full file).
+ * Fall back to parsing agent traces when the archive doesn't include the file.
+ *
+ * Provided files: extracted from agent traces (files read before any edits).
  */
 
 import { readFileSync, readdirSync, mkdirSync, writeFileSync, existsSync } from "fs";
 import { join, basename } from "path";
+import { execSync } from "child_process";
 
+const DATA_DIR = join(import.meta.dirname, "..", "data");
 const TRACES_DIR = join(import.meta.dirname, "..", "public", "traces");
 const OUT_DIR = join(import.meta.dirname, "..", "public", "assignments");
 
@@ -29,19 +34,66 @@ function stripPersistedOutput(text) {
   // Claude Code wraps large outputs in <persisted-output>...\nPreview (first 2KB):\n...actual content...</persisted-output>
   const match = text.match(/<persisted-output>\s*Output too large[^\n]*\n\nPreview \(first \d+KB\):\n([\s\S]*?)<\/persisted-output>/);
   if (match) return match[1].trim();
-  // Also handle simpler wrapper without preview header
   const simple = text.match(/<persisted-output>\s*([\s\S]*?)<\/persisted-output>/);
   if (simple) return simple[1].trim();
   return text;
 }
 
+/**
+ * Strip model suffixes: comp140_circles_opus -> comp140_circles
+ * Must stay in sync with src/lib/data.ts:getAssignmentBase().
+ */
 function getAssignmentBase(workspaceId) {
-  // Strip model suffixes: comp140_circles_opus -> comp140_circles
   return workspaceId
     .replace(/_opus$/, "")
     .replace(/_haiku$/, "")
     .replace(/_sonnet$/, "");
 }
+
+// ---------------------------------------------------------------------------
+// Archive-based extraction: pull instructions.md directly from tar.gz
+// ---------------------------------------------------------------------------
+
+function buildArchiveInstructionsMap() {
+  const map = new Map(); // assignmentBase -> instructions string
+  const archives = readdirSync(DATA_DIR).filter((f) => f.startsWith("final-") && f.endsWith(".tar.gz"));
+
+  for (const archive of archives) {
+    const archivePath = join(DATA_DIR, archive);
+    // List files matching instructions.md
+    let listing;
+    try {
+      listing = execSync(`tar -tzf "${archivePath}" | grep '/instructions.md$'`, { encoding: "utf-8" }).trim();
+    } catch {
+      continue; // no instructions in this archive
+    }
+    if (!listing) continue;
+
+    for (const entry of listing.split("\n")) {
+      // entry: archive-TIMESTAMP/workspaces/WORKSPACE_ID/instructions.md
+      const parts = entry.split("/");
+      const wsId = parts[parts.length - 2]; // e.g. comp318_m3ssag1n8_opus
+      const base = getAssignmentBase(wsId);
+
+      if (map.has(base)) continue; // already extracted from a previous archive
+
+      try {
+        const content = execSync(`tar -xzf "${archivePath}" --to-stdout "${entry}"`, { encoding: "utf-8" });
+        if (content && content.length > 20) {
+          map.set(base, content);
+        }
+      } catch {
+        // skip on extraction error
+      }
+    }
+  }
+
+  return map;
+}
+
+// ---------------------------------------------------------------------------
+// Trace-based extraction (fallback)
+// ---------------------------------------------------------------------------
 
 function extractFromTrace(tracePath) {
   const trace = JSON.parse(readFileSync(tracePath, "utf-8"));
@@ -49,14 +101,12 @@ function extractFromTrace(tracePath) {
   const providedFiles = [];
   const seenPaths = new Set();
 
-  // Scan early turns for file reads before any edits
   let sawEdit = false;
   for (const turn of trace.turns) {
     for (const block of turn.blocks) {
       if (block.type !== "tool_call") continue;
       const call = block.call;
 
-      // Stop collecting provided files after first edit
       if (["Edit", "Write"].includes(call.name)) {
         sawEdit = true;
       }
@@ -69,7 +119,6 @@ function extractFromTrace(tracePath) {
         const cleanPath = stripPaths(filePath).replace(/^\.\//, "");
         const content = stripLineNumbers(stripPaths(stripPersistedOutput(rawOutput)));
 
-        // Instructions file — concatenate chunked reads, skip errors
         if (cleanPath.includes("instructions")) {
           if (content.includes("exceeds maximum") || content.includes("tool_use_error")) continue;
           if (!instructions) {
@@ -80,7 +129,6 @@ function extractFromTrace(tracePath) {
           continue;
         }
 
-        // Provided files: only before first edit, only workspace-local files
         if (
           !sawEdit &&
           !seenPaths.has(cleanPath) &&
@@ -98,12 +146,15 @@ function extractFromTrace(tracePath) {
         }
       }
     }
-    // Don't scan too many turns - instructions and templates are read early
     if (turn.index > 5 && instructions) break;
   }
 
   return { instructions, providedFiles };
 }
+
+// ---------------------------------------------------------------------------
+// Main
+// ---------------------------------------------------------------------------
 
 function main() {
   if (!existsSync(TRACES_DIR)) {
@@ -113,15 +164,19 @@ function main() {
 
   mkdirSync(OUT_DIR, { recursive: true });
 
+  // 1. Build map of instructions from archives (preferred — full files)
+  console.log("Scanning archives for instructions.md files...");
+  const archiveInstructions = buildArchiveInstructionsMap();
+  console.log(`  Found ${archiveInstructions.size} instructions from archives`);
+
+  // 2. Group traces by assignment base, prefer opus
   const traceFiles = readdirSync(TRACES_DIR).filter((f) => f.endsWith(".json"));
   console.log(`Found ${traceFiles.length} trace files`);
 
-  // Group by assignment base, prefer opus traces
   const byAssignment = new Map();
   for (const f of traceFiles) {
     const wsId = f.replace(".json", "");
     const base = getAssignmentBase(wsId);
-    // Prefer opus, then sonnet (no suffix), then haiku
     const priority = wsId.includes("_opus") ? 0 : wsId.includes("_haiku") ? 2 : 1;
     const existing = byAssignment.get(base);
     if (!existing || priority < existing.priority) {
@@ -129,15 +184,29 @@ function main() {
     }
   }
 
+  // 3. Extract each assignment
   let totalFiles = 0;
+  let fromArchive = 0;
+  let fromTrace = 0;
+
   for (const [base, { file }] of byAssignment) {
     try {
-      const { instructions, providedFiles } = extractFromTrace(
+      const { instructions: traceInstructions, providedFiles } = extractFromTrace(
         join(TRACES_DIR, file)
       );
+
+      // Prefer archive instructions over trace-extracted ones
+      const instructions = archiveInstructions.get(base) ?? traceInstructions;
+
       if (!instructions) {
         console.warn(`  No instructions found for ${base}`);
         continue;
+      }
+
+      if (archiveInstructions.has(base)) {
+        fromArchive++;
+      } else {
+        fromTrace++;
       }
 
       const data = { assignmentBase: base, instructions, providedFiles };
@@ -151,6 +220,7 @@ function main() {
   console.log(
     `\nDone! Wrote ${totalFiles} assignment files to public/assignments/`
   );
+  console.log(`  ${fromArchive} with archive instructions, ${fromTrace} with trace-extracted instructions`);
 }
 
 main();
