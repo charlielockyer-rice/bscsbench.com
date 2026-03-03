@@ -1,1 +1,1 @@
-{"workspaceId":"comp382_homework4_haiku","modelUsage":[{"model":"claude-haiku-4-5-20251001","inputTokens":23,"outputTokens":9023,"cacheReadTokens":78414,"costUsd":0.07721065}],"claudeCodeVersion":"2.1.62","rateLimitEvents":0}
+{"workspaceId":"comp382_homework4_haiku","modelUsage":[{"model":"claude-haiku-4-5-20251001","inputTokens":23,"outputTokens":4818,"cacheReadTokens":77138,"costUsd":0.0551393}],"claudeCodeVersion":"2.1.63","rateLimitEvents":0}

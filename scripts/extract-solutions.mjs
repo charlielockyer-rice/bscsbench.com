@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 
 import { execSync } from "child_process";
-import { readdirSync, mkdirSync, writeFileSync } from "fs";
+import { readdirSync, readFileSync, mkdirSync, writeFileSync, rmSync } from "fs";
 import { join, basename, extname } from "path";
+import { tmpdir } from "os";
 
 const DATA_DIR = join(import.meta.dirname, "..", "data");
 const OUT_DIR = join(import.meta.dirname, "..", "public", "solutions");
@@ -14,6 +15,10 @@ const EXTENSION_LANG = {
   ".java": "java",
   ".c": "c",
   ".h": "c",
+  ".ts": "typescript",
+  ".go": "go",
+  ".css": "css",
+  ".html": "html",
   ".md": "markdown",
   ".txt": "text",
   ".log": "text",
@@ -23,6 +28,18 @@ const ALLOWED_EXTENSIONS = new Set(Object.keys(EXTENSION_LANG));
 const ALLOWED_BASENAMES = new Set(["Makefile"]);
 
 const EXCLUDED_PATTERNS = [".dSYM/", "__pycache__/", ".plist", ".yml"];
+
+// Files to skip when extracting from bundles (metadata, not solution code)
+const BUNDLE_EXCLUDED = new Set([
+  "instructions.md",
+  "workspace.json",
+  "workspace.yaml",
+  "README.md",
+  "package-lock.json",
+  ".env",
+  ".gitignore",
+  "go.sum",
+]);
 
 function getArchives() {
   return readdirSync(DATA_DIR)
@@ -64,6 +81,102 @@ function listDiffFiles(archivePath) {
   } catch {
     return [];
   }
+}
+
+function listBundleFiles(archivePath) {
+  try {
+    const output = execSync(
+      `tar -tzf "${archivePath}" | grep '\\.bundle$'`,
+      { encoding: "utf-8" }
+    );
+    return output.trim().split("\n").filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Extract solution files from a git bundle.
+ * Clones the bundle to a temp dir, diffs HEAD against the initial commit
+ * to find agent-modified files, reads them, and cleans up.
+ */
+function extractFromBundle(archivePath, bundlePath, workspaceId) {
+  const tmp = join(tmpdir(), `bscs-bundle-${workspaceId}-${Date.now()}`);
+  const bundleFile = join(tmp, "repo.bundle");
+  const repoDir = join(tmp, "repo");
+  const files = [];
+  let writeup = null;
+
+  try {
+    mkdirSync(tmp, { recursive: true });
+
+    // Extract bundle from archive
+    execSync(`tar -xzf "${archivePath}" --to-stdout "${bundlePath}" > "${bundleFile}"`, {
+      shell: true,
+    });
+
+    // Clone bundle
+    execSync(`git clone "${bundleFile}" "${repoDir}"`, {
+      encoding: "utf-8",
+      stdio: "pipe",
+    });
+
+    // Find agent-modified files by diffing initial commit against HEAD
+    const firstCommit = execSync("git rev-list --max-parents=0 HEAD", {
+      cwd: repoDir,
+      encoding: "utf-8",
+    }).trim();
+
+    const changedFiles = execSync(`git diff --name-only ${firstCommit} HEAD`, {
+      cwd: repoDir,
+      encoding: "utf-8",
+    })
+      .trim()
+      .split("\n")
+      .filter(Boolean);
+
+    for (const relativePath of changedFiles) {
+      const filename = basename(relativePath);
+
+      // Skip metadata/excluded files
+      if (BUNDLE_EXCLUDED.has(filename)) continue;
+      if (!shouldInclude(relativePath)) continue;
+
+      try {
+        let content = readFileSync(join(repoDir, relativePath), "utf-8");
+        const sizeBytes = Buffer.byteLength(content, "utf-8");
+        let truncated = false;
+
+        content = stripPaths(content);
+        if (content.length > MAX_FILE_SIZE) {
+          content =
+            content.slice(0, MAX_FILE_SIZE) +
+            `\n... (truncated ${content.length - MAX_FILE_SIZE} chars)`;
+          truncated = true;
+        }
+
+        const language = detectLanguage(relativePath);
+        const file = { path: relativePath, filename, language, content, sizeBytes, truncated };
+        files.push(file);
+
+        if (filename === "writeup.md" || filename === "writeup.txt") {
+          writeup = { filename, content, format: filename.endsWith(".md") ? "md" : "txt" };
+        }
+      } catch {
+        // Skip files that can't be read (binary, symlinks, etc.)
+      }
+    }
+  } catch (err) {
+    console.error(`  Bundle extraction failed for ${workspaceId}: ${err.message}`);
+  } finally {
+    try {
+      rmSync(tmp, { recursive: true, force: true });
+    } catch {
+      // Cleanup best-effort
+    }
+  }
+
+  return { files, writeup };
 }
 
 function extractFile(archivePath, filePath) {
@@ -116,6 +229,7 @@ function main() {
     const solutionPaths = listSolutionFiles(archive);
     const gradePaths = listGradeFiles(archive);
     const diffPaths = listDiffFiles(archive);
+    const bundlePaths = listBundleFiles(archive);
 
     // Group by workspaceId
     const workspaces = new Map();
@@ -133,7 +247,7 @@ function main() {
       if (!relativePath) continue;
 
       if (!workspaces.has(workspaceId)) {
-        workspaces.set(workspaceId, { files: [], gradeFile: null, diffFile: null });
+        workspaces.set(workspaceId, { files: [], gradeFile: null, diffFile: null, bundleFile: null });
       }
       workspaces.get(workspaceId).files.push({ archivePath: p, relativePath });
     }
@@ -147,7 +261,7 @@ function main() {
       if (workspaces.has(workspaceId)) {
         workspaces.get(workspaceId).gradeFile = gp;
       } else {
-        workspaces.set(workspaceId, { files: [], gradeFile: gp, diffFile: null });
+        workspaces.set(workspaceId, { files: [], gradeFile: gp, diffFile: null, bundleFile: null });
       }
     }
 
@@ -160,17 +274,30 @@ function main() {
       if (workspaces.has(workspaceId)) {
         workspaces.get(workspaceId).diffFile = dp;
       } else {
-        workspaces.set(workspaceId, { files: [], gradeFile: null, diffFile: dp });
+        workspaces.set(workspaceId, { files: [], gradeFile: null, diffFile: dp, bundleFile: null });
+      }
+    }
+
+    // Map bundle files to workspaces
+    for (const bp of bundlePaths) {
+      // Path: archive-xxx/workspaces/{workspaceId}.bundle
+      const wsId = basename(bp, ".bundle");
+      if (workspaces.has(wsId)) {
+        workspaces.get(wsId).bundleFile = bp;
+      } else {
+        workspaces.set(wsId, { files: [], gradeFile: null, diffFile: null, bundleFile: bp });
       }
     }
 
     console.log(`  Found ${workspaces.size} workspaces with solutions`);
 
+    let bundleCount = 0;
     for (const [workspaceId, ws] of workspaces) {
       try {
-        const files = [];
+        let files = [];
         let writeup = null;
 
+        // Extract from solution/ directory
         for (const { archivePath, relativePath } of ws.files) {
           try {
             let content = extractFile(archive, archivePath);
@@ -215,6 +342,25 @@ function main() {
           }
         }
 
+        // If solution/ dir yielded no code files, try extracting from bundle
+        const hasCodeFiles = files.some(
+          (f) => !["markdown", "text", "plaintext"].includes(f.language)
+        );
+        if (!hasCodeFiles && ws.bundleFile) {
+          const bundle = extractFromBundle(archive, ws.bundleFile, workspaceId);
+          // Merge: bundle files + any solution/ dir files (e.g. writeups)
+          const existingPaths = new Set(files.map((f) => f.path));
+          for (const bf of bundle.files) {
+            if (!existingPaths.has(bf.path)) {
+              files.push(bf);
+            }
+          }
+          if (!writeup && bundle.writeup) {
+            writeup = bundle.writeup;
+          }
+          bundleCount++;
+        }
+
         // Extract grader review
         let graderReview = null;
         if (ws.gradeFile) {
@@ -247,6 +393,9 @@ function main() {
       } catch (err) {
         console.error(`  Error processing ${workspaceId}: ${err.message}`);
       }
+    }
+    if (bundleCount > 0) {
+      console.log(`  Extracted ${bundleCount} workspaces from git bundles`);
     }
   }
 

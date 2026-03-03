@@ -1,0 +1,1 @@
+{"workspaceId":"comp318_m3ssag1n8_opus","modelUsage":[{"model":"claude-opus-4-6","inputTokens":71,"outputTokens":130437,"cacheReadTokens":5400004,"costUsd":7.7533507499999965},{"model":"claude-haiku-4-5-20251001","inputTokens":104,"outputTokens":6740,"cacheReadTokens":1162236,"costUsd":0.26268009999999997}],"claudeCodeVersion":"2.1.63","rateLimitEvents":0}
