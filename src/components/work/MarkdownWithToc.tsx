@@ -9,9 +9,10 @@ const HEADING_SELECTOR = "h1[id], h2[id], h3[id], h4[id], h5[id], h6[id]";
 
 interface MarkdownWithTocProps {
   text: string;
+  highlightedBlocks?: Record<number, string>;
 }
 
-export function MarkdownWithToc({ text }: MarkdownWithTocProps) {
+export function MarkdownWithToc({ text, highlightedBlocks }: MarkdownWithTocProps) {
   const tocEntries = useMemo(() => extractTocEntries(text), [text]);
   const [activeSlug, setActiveSlug] = useState(tocEntries[0]?.slug ?? "");
   const contentRef = useRef<HTMLDivElement>(null);
@@ -42,7 +43,7 @@ export function MarkdownWithToc({ text }: MarkdownWithTocProps) {
   if (tocEntries.length === 0) {
     return (
       <div className="text-sm leading-relaxed space-y-2">
-        {renderMarkdownLite(text)}
+        {renderMarkdownLite(text, highlightedBlocks)}
       </div>
     );
   }
@@ -70,7 +71,7 @@ export function MarkdownWithToc({ text }: MarkdownWithTocProps) {
       </nav>
 
       <div ref={contentRef} className="min-w-0 flex-1 text-sm leading-relaxed space-y-2">
-        {renderMarkdownLite(text)}
+        {renderMarkdownLite(text, highlightedBlocks)}
       </div>
 
       {/* Spacer matching TOC width to center the content */}

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { getEntryByWorkspaceId } from "@/lib/data";
-import { highlightCode } from "@/lib/shiki";
+import { highlightCode, highlightMarkdownBlocks } from "@/lib/shiki";
 import type { SolutionData } from "@/lib/solution-types";
 import type { ProcessedTrace, TraceSummary, TraceMetadata } from "@/lib/trace-types";
 import type { AgentMeta } from "@/lib/agent-meta-types";
@@ -118,6 +118,10 @@ export default async function WorkPage({
             java: "java",
             c: "c",
             h: "c",
+            ts: "typescript",
+            go: "go",
+            css: "css",
+            html: "html",
           };
           const lang = file.filename === "Makefile" ? "makefile" : (langMap[ext] ?? "text");
           return {
@@ -131,6 +135,11 @@ export default async function WorkPage({
         })
       )
     : [];
+
+  // Pre-highlight code blocks in writeup markdown
+  const writeupBlocks = solution?.writeup?.format === "md"
+    ? await highlightMarkdownBlocks(solution.writeup.content)
+    : undefined;
 
   return (
     <div className="mx-auto max-w-[1800px] px-4 py-12 sm:px-6 lg:px-[5%]">
@@ -172,10 +181,24 @@ export default async function WorkPage({
           {
             id: "solution",
             label: "Solution",
-            disabled: !highlightedFiles.length,
+            disabled: !highlightedFiles.length && !solution?.writeup,
             content: highlightedFiles.length > 0 ? (
               <SolutionViewer files={highlightedFiles} />
+            ) : solution?.writeup ? (
+              <WriteupSection writeup={solution.writeup} highlightedBlocks={writeupBlocks} />
             ) : null,
+          },
+          {
+            id: "writeup",
+            label: "Writeup",
+            disabled: !solution?.writeup || !highlightedFiles.length,
+            content: <WriteupSection writeup={solution?.writeup ?? null} highlightedBlocks={writeupBlocks} />,
+          },
+          {
+            id: "review",
+            label: "Review",
+            disabled: !solution?.graderReview,
+            content: <GraderReview graderReview={solution?.graderReview ?? null} />,
           },
           {
             id: "diff",
@@ -198,21 +221,9 @@ export default async function WorkPage({
             ) : null,
           },
           {
-            id: "writeup",
-            label: "Writeup",
-            disabled: !solution?.writeup,
-            content: <WriteupSection writeup={solution?.writeup ?? null} />,
-          },
-          {
             id: "trace",
             label: "Agent Trace",
             content: <TraceViewer workspaceId={workspaceId} />,
-          },
-          {
-            id: "review",
-            label: "Review",
-            disabled: !solution?.graderReview,
-            content: <GraderReview graderReview={solution?.graderReview ?? null} />,
           },
           {
             id: "stats",

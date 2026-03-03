@@ -1,6 +1,6 @@
 import { createHighlighter, type Highlighter, type ShikiTransformer } from "shiki";
 
-const SUPPORTED_LANGS = ["python", "java", "c", "markdown", "makefile", "diff"] as const;
+const SUPPORTED_LANGS = ["python", "java", "c", "typescript", "go", "css", "html", "markdown", "makefile", "diff"] as const;
 
 function getNodeText(node: Record<string, unknown>): string {
   if (node.type === "text") return node.value as string;
@@ -54,4 +54,35 @@ export async function highlightCode(
     themes: { light: "github-light", dark: "github-dark" },
     transformers: validLang === "diff" ? [diffLineTransformer] : [],
   });
+}
+
+/** Pre-highlight all fenced code blocks in markdown text. Returns a map from block index to HTML. */
+export async function highlightMarkdownBlocks(
+  text: string
+): Promise<Record<number, string>> {
+  const lines = text.split("\n");
+  const blocks: Record<number, string> = {};
+  let blockIndex = 0;
+  let i = 0;
+
+  while (i < lines.length) {
+    if (lines[i].startsWith("```")) {
+      const lang = lines[i].slice(3).trim();
+      const codeLines: string[] = [];
+      i++;
+      while (i < lines.length && !lines[i].startsWith("```")) {
+        codeLines.push(lines[i]);
+        i++;
+      }
+      i++; // skip closing ```
+      if (lang) {
+        blocks[blockIndex] = await highlightCode(codeLines.join("\n"), lang);
+      }
+      blockIndex++;
+    } else {
+      i++;
+    }
+  }
+
+  return blocks;
 }

@@ -52,10 +52,14 @@ export function extractTocEntries(text: string): TocEntry[] {
  * Handles code fences, inline code, bold, headers (h1-h6), lists, tables,
  * and paragraph breaks.
  */
-export function renderMarkdownLite(text: string): React.ReactNode[] {
+export function renderMarkdownLite(
+  text: string,
+  highlightedBlocks?: Record<number, string>
+): React.ReactNode[] {
   const blocks: React.ReactNode[] = [];
   const lines = text.split("\n");
   const slugCounts = new Map<string, number>();
+  let codeBlockIndex = 0;
   let i = 0;
 
   while (i < lines.length) {
@@ -71,14 +75,26 @@ export function renderMarkdownLite(text: string): React.ReactNode[] {
         i++;
       }
       i++; // skip closing ```
-      blocks.push(
-        <pre
-          key={blocks.length}
-          className="bg-muted/50 rounded-lg p-4 font-mono text-xs overflow-x-auto my-2"
-        >
-          <code data-lang={lang || undefined}>{codeLines.join("\n")}</code>
-        </pre>
-      );
+      const highlighted = highlightedBlocks?.[codeBlockIndex];
+      codeBlockIndex++;
+      if (highlighted) {
+        blocks.push(
+          <div
+            key={blocks.length}
+            className="rounded-lg border overflow-hidden my-2 [&_pre]:p-4 [&_pre]:m-0 [&_code]:text-xs"
+            dangerouslySetInnerHTML={{ __html: highlighted }}
+          />
+        );
+      } else {
+        blocks.push(
+          <pre
+            key={blocks.length}
+            className="bg-muted/50 rounded-lg p-4 font-mono text-xs overflow-x-auto my-2"
+          >
+            <code data-lang={lang || undefined}>{codeLines.join("\n")}</code>
+          </pre>
+        );
+      }
       continue;
     }
 
