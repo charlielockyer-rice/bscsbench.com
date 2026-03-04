@@ -62,7 +62,7 @@ function listSolutionFiles(archivePath) {
 function listGradeFiles(archivePath) {
   try {
     const output = execSync(
-      `tar -tzf "${archivePath}" | grep 'llm_grade_result\\.txt$'`,
+      `tar -tzf "${archivePath}" | grep 'llm_grade_result.*\\.txt$'`,
       { encoding: "utf-8" }
     );
     return output.trim().split("\n").filter(Boolean);

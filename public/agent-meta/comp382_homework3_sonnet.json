@@ -1,1 +1,1 @@
-{"workspaceId":"comp382_homework3_sonnet","modelUsage":[{"model":"claude-sonnet-4-6","inputTokens":6,"outputTokens":36323,"cacheReadTokens":204565,"costUsd":1.327075}],"claudeCodeVersion":"","rateLimitEvents":0}
+{"workspaceId":"comp382_homework3_sonnet","modelUsage":[{"model":"claude-sonnet-4-6","inputTokens":6,"outputTokens":36323,"cacheReadTokens":204565,"costUsd":1.327075}],"claudeCodeVersion":"2.1.63","rateLimitEvents":0}

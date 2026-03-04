@@ -32,8 +32,8 @@ const MODEL_REGISTRY: Record<
     logo: "/logos/claude.svg",
     tags: ["closed-source"],
   },
-  "gpt-5.2-codex": {
-    name: "GPT-5.2 Codex",
+  "gpt-5.3-codex": {
+    name: "GPT-5.3 Codex",
     provider: "OpenAI",
     logo: "/logos/openai.png",
     tags: ["closed-source"],
@@ -207,7 +207,8 @@ export function getAssignmentBase(workspaceId: string): string {
   return workspaceId
     .replace(/_opus$/, "")
     .replace(/_haiku$/, "")
-    .replace(/_sonnet$/, "");
+    .replace(/_sonnet$/, "")
+    .replace(/_codex$/, "");
 }
 
 /** Get the list of assignments for a given course, derived from any entry's course data. */

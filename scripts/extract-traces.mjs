@@ -186,6 +186,124 @@ function processTrace(raw) {
   return { metadata, turns, summary };
 }
 
+function processCodexTrace(raw) {
+  const lines = raw
+    .trim()
+    .split("\n")
+    .map((l) => JSON.parse(l));
+
+  let metadata = { workspaceId: "", model: "", sessionId: "", claudeCodeVersion: "", tools: [] };
+  let summary = {
+    durationMs: 0,
+    numTurns: 0,
+    totalCostUsd: 0,
+    isError: false,
+    resultText: "",
+    rateLimitEvents: 0,
+  };
+
+  const turns = [];
+  let currentBlocks = [];
+  let turnIndex = 0;
+  let inputTokens = 0;
+  let outputTokens = 0;
+
+  for (const event of lines) {
+    if (event.type === "thread.started") {
+      metadata.threadId = event.thread_id || "";
+      continue;
+    }
+
+    if (event.type === "turn.started") {
+      currentBlocks = [];
+      continue;
+    }
+
+    if (event.type === "turn.completed") {
+      if (event.usage) {
+        inputTokens += event.usage.input_tokens || 0;
+        outputTokens += event.usage.output_tokens || 0;
+      }
+      if (currentBlocks.length > 0) {
+        turns.push({ index: turnIndex, blocks: currentBlocks });
+        turnIndex++;
+      }
+      currentBlocks = [];
+      continue;
+    }
+
+    if (event.type === "item.completed") {
+      const item = event.item || {};
+
+      if (item.type === "agent_message" && item.text) {
+        currentBlocks.push({
+          type: "text",
+          text: stripPaths(item.text.trim()),
+        });
+      } else if (item.type === "command_execution") {
+        currentBlocks.push({
+          type: "tool_call",
+          call: {
+            id: item.id || "",
+            name: "command",
+            input: stripPathsDeep({ command: item.command || "" }),
+            output: truncate(stripPaths(item.aggregated_output || "")),
+          },
+        });
+      } else if (item.type === "mcp_tool_call") {
+        const resultText = Array.isArray(item.result?.content)
+          ? item.result.content
+              .map((c) => (c.type === "text" ? c.text : JSON.stringify(c)))
+              .join("\n")
+          : typeof item.result === "string"
+            ? item.result
+            : JSON.stringify(item.result || "");
+        currentBlocks.push({
+          type: "tool_call",
+          call: {
+            id: item.id || "",
+            name: item.tool || "mcp_tool",
+            input: stripPathsDeep(item.arguments || {}),
+            output: truncate(stripPaths(resultText)),
+          },
+        });
+      } else if (item.type === "file_change") {
+        currentBlocks.push({
+          type: "tool_call",
+          call: {
+            id: item.id || "",
+            name: "file_change",
+            input: stripPathsDeep({ changes: item.changes || [] }),
+            output: "",
+          },
+        });
+      }
+      continue;
+    }
+
+    // Skip item.started events
+  }
+
+  // Flush any remaining blocks
+  if (currentBlocks.length > 0) {
+    turns.push({ index: turnIndex, blocks: currentBlocks });
+  }
+
+  summary.numTurns = turns.length;
+
+  return { metadata, turns, summary };
+}
+
+function isCodexTrace(raw) {
+  const firstLine = raw.trim().split("\n")[0];
+  try {
+    const event = JSON.parse(firstLine);
+    return event.type === "thread.started";
+  } catch {
+    return false;
+  }
+}
+
 function main() {
   const archives = getArchives();
   if (archives.length === 0) {
@@ -211,7 +329,7 @@ function main() {
 
       try {
         const raw = extractTrace(archive, tracePath);
-        const processed = processTrace(raw);
+        const processed = isCodexTrace(raw) ? processCodexTrace(raw) : processTrace(raw);
         processed.metadata.workspaceId = workspaceId;
 
         const outPath = join(OUT_DIR, `${workspaceId}.json`);

@@ -1,1 +1,1 @@
-{"workspaceId":"comp318_owldb_sonnet","modelUsage":[{"model":"claude-sonnet-4-6","inputTokens":76,"outputTokens":89637,"cacheReadTokens":7183956,"costUsd":6.99611425}],"claudeCodeVersion":"","rateLimitEvents":0}
+{"workspaceId":"comp318_owldb_sonnet","modelUsage":[{"model":"claude-sonnet-4-6","inputTokens":76,"outputTokens":89637,"cacheReadTokens":7183956,"costUsd":6.99611425}],"claudeCodeVersion":"2.1.63","rateLimitEvents":0}
