@@ -20,10 +20,17 @@ export interface GraderReviewData {
   content: string;
 }
 
+export interface ModelReview {
+  modelId: string;
+  content: string;
+}
+
 export interface SolutionData {
   workspaceId: string;
   files: SolutionFile[];
   writeup: SolutionWriteup | null;
   graderReview: GraderReviewData | null;
+  llmGradeReviews: ModelReview[];
+  codeReviews: ModelReview[];
   diff: string | null;
 }

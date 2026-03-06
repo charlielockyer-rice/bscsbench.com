@@ -1,0 +1,1 @@
+{"workspaceId":"comp140_map_search_opus","modelUsage":[{"model":"claude-opus-4-6","inputTokens":29,"outputTokens":8021,"cacheReadTokens":1139001,"costUsd":0.965858},{"model":"claude-haiku-4-5-20251001","inputTokens":14,"outputTokens":2222,"cacheReadTokens":40438,"costUsd":0.07153905}],"claudeCodeVersion":"2.1.63","rateLimitEvents":0}

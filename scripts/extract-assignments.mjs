@@ -57,7 +57,7 @@ function getAssignmentBase(workspaceId) {
 
 function buildArchiveInstructionsMap() {
   const map = new Map(); // assignmentBase -> instructions string
-  const archives = readdirSync(DATA_DIR).filter((f) => f.startsWith("final-") && f.endsWith(".tar.gz"));
+  const archives = readdirSync(DATA_DIR).filter((f) => (f.startsWith("final-") || f.startsWith("archive-")) && f.endsWith(".tar.gz"));
 
   for (const archive of archives) {
     const archivePath = join(DATA_DIR, archive);

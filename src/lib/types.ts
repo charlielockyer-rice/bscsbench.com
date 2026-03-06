@@ -1,32 +1,18 @@
 // === Raw archive types (match summary.json from bench-cli) ===
 
 export interface ArchiveRunMetadata {
-  timestamp: string;
-  agent: string;
-  model: string;
+  timestamp: string | null;
+  agent?: string;
+  model?: string;
   model_id: string;
   skip_permissions?: boolean;
-  total_workspaces: number;
+  total_workspaces?: number;
   course_filter?: string;
+  rebuilt?: boolean;
+  rebuilt_at?: string;
 }
 
-export interface ArchiveWorkspaceGrade {
-  tests_passed: number;
-  tests_total: number;
-  points_earned: number;
-  points_possible: number;
-  score_percentage: number;
-}
-
-export interface ArchiveLlmGrade {
-  status: "graded" | "error";
-  feedback: string;
-  points_earned?: number;
-  points_possible?: number;
-  score_percentage?: number;
-}
-
-export interface ArchiveTestResult {
+export interface ArchiveTestResultOld {
   test_name: string;
   status: "pass" | "fail";
   points_earned: number;
@@ -39,8 +25,37 @@ export interface ArchiveTestResult {
   execution_time_ms: number;
 }
 
+export interface ArchiveTestResultNew {
+  name: string;
+  passed: boolean;
+  points: number;
+  max_points: number;
+  error: string | null;
+  expected: string;
+  actual: string;
+}
+
+export interface ArchiveWorkspaceGrade {
+  tests_passed: number;
+  tests_total: number;
+  points_earned: number;
+  points_possible: number;
+  score_percentage: number;
+  /** New format nests test_results inside grade */
+  test_results?: ArchiveTestResultNew[];
+}
+
+export interface ArchiveLlmGrade {
+  status: "graded" | "error";
+  feedback: string;
+  points_earned?: number;
+  points_possible?: number;
+  score_percentage?: number;
+}
+
 export interface ArchiveWorkspace {
   id: string;
+  assignment_id?: string;
   course: string;
   language: string;
   assignment_number: number;
@@ -57,8 +72,15 @@ export interface ArchiveWorkspace {
   model_id: string;
   grade: ArchiveWorkspaceGrade | null;
   grade_summary: string;
+  /** Old format: single LLM grade */
   llm_grade?: ArchiveLlmGrade;
-  test_results?: ArchiveTestResult[];
+  /** New format: dict of model_id -> grade */
+  llm_grades?: Record<string, ArchiveLlmGrade>;
+  /** New format: dict of model_id -> code review */
+  code_reviews?: Record<string, ArchiveLlmGrade>;
+  /** Old format: test results at workspace level */
+  test_results?: ArchiveTestResultOld[];
+  has_agent_trace?: boolean;
 }
 
 export interface ArchiveCourseTotals {
@@ -138,8 +160,17 @@ export interface TestResult {
   executionTimeMs: number;
 }
 
+export interface LlmGradeEntry {
+  modelId: string;
+  status: string;
+  pointsEarned?: number;
+  pointsPossible?: number;
+  feedback?: string;
+}
+
 export interface AssignmentResult {
   id: string;
+  assignmentId?: string;
   number: number;
   displayName: string;
   testsPassed: number;
@@ -152,12 +183,17 @@ export interface AssignmentResult {
   isTimeout: boolean;
   durationApiMs: number;
   weight: number;
+  /** Old singular LLM grade (kept for backward compat with UI components) */
   llmGrade?: {
     status: string;
     pointsEarned?: number;
     pointsPossible?: number;
     feedback?: string;
   };
+  /** All LLM grades keyed by grader model (new format, also populated from old singular) */
+  llmGrades?: LlmGradeEntry[];
+  /** Code reviews keyed by reviewer model (new format only) */
+  codeReviews?: LlmGradeEntry[];
   testResults?: TestResult[];
 }
 

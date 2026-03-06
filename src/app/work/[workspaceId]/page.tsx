@@ -180,10 +180,31 @@ export default async function WorkPage({
             content: <WriteupSection writeup={solution?.writeup ?? null} highlightedBlocks={writeupBlocks} />,
           },
           {
-            id: "review",
-            label: "Review",
-            disabled: !solution?.graderReview,
-            content: <GraderReview graderReview={solution?.graderReview ?? null} />,
+            id: "written-review",
+            label: "Written Review",
+            disabled:
+              !(solution?.llmGradeReviews?.length) && !solution?.graderReview,
+            content: (
+              <GraderReview
+                reviews={
+                  solution?.llmGradeReviews?.length
+                    ? solution.llmGradeReviews
+                    : solution?.graderReview
+                      ? [{ modelId: "grader", content: solution.graderReview.content }]
+                      : []
+                }
+              />
+            ),
+          },
+          {
+            id: "code-review",
+            label: "Code Review",
+            disabled: !(solution?.codeReviews?.length),
+            content: (
+              <GraderReview
+                reviews={solution?.codeReviews ?? []}
+              />
+            ),
           },
           {
             id: "diff",

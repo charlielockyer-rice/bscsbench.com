@@ -11,7 +11,7 @@ const MAX_OUTPUT_CHARS = 10_000;
 
 function getArchives() {
   return readdirSync(DATA_DIR)
-    .filter((f) => f.startsWith("final-") && f.endsWith(".tar.gz"))
+    .filter((f) => (f.startsWith("final-") || f.startsWith("archive-")) && f.endsWith(".tar.gz"))
     .map((f) => join(DATA_DIR, f));
 }
 

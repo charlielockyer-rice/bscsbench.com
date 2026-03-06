@@ -43,56 +43,45 @@ const BUNDLE_EXCLUDED = new Set([
 
 function getArchives() {
   return readdirSync(DATA_DIR)
-    .filter((f) => f.startsWith("final-") && f.endsWith(".tar.gz"))
+    .filter((f) => (f.startsWith("final-") || f.startsWith("archive-")) && f.endsWith(".tar.gz"))
     .map((f) => join(DATA_DIR, f));
 }
 
-function listSolutionFiles(archivePath) {
+/**
+ * List all files in the archive with a single tar invocation,
+ * then categorize them by type using JS filters.
+ */
+function listArchiveFiles(archivePath) {
+  let allFiles;
   try {
-    const output = execSync(
-      `tar -tzf "${archivePath}" | grep '/solution/'`,
-      { encoding: "utf-8" }
-    );
-    return output.trim().split("\n").filter(Boolean);
+    const output = execSync(`tar -tzf "${archivePath}"`, { encoding: "utf-8" });
+    allFiles = output.trim().split("\n").filter(Boolean);
   } catch {
-    return [];
+    allFiles = [];
   }
+
+  return {
+    solutionPaths: allFiles.filter((f) => f.includes("/solution/")),
+    gradePaths: allFiles.filter((f) => /llm_grade_result.*\.txt$/.test(f)),
+    llmGradeMdPaths: allFiles.filter((f) => /llm_grade_result_.*\.md$/.test(f)),
+    codeReviewPaths: allFiles.filter((f) => /code_review_result_.*\.md$/.test(f)),
+    diffPaths: allFiles.filter((f) => /solution\.diff$/.test(f)),
+    bundlePaths: allFiles.filter((f) => /\.bundle$/.test(f)),
+  };
 }
 
-function listGradeFiles(archivePath) {
-  try {
-    const output = execSync(
-      `tar -tzf "${archivePath}" | grep 'llm_grade_result.*\\.txt$'`,
-      { encoding: "utf-8" }
-    );
-    return output.trim().split("\n").filter(Boolean);
-  } catch {
-    return [];
-  }
+/**
+ * Extract the model ID from a review filename.
+ * e.g. "llm_grade_result_claude-opus-4.6.md" -> "claude-opus-4.6"
+ *      "code_review_result_claude-sonnet-4-6.md" -> "claude-sonnet-4-6"
+ */
+function parseModelIdFromFilename(filename, prefix) {
+  if (!filename.startsWith(prefix) || !filename.endsWith(".md")) return null;
+  return filename.slice(prefix.length, -".md".length);
 }
 
-function listDiffFiles(archivePath) {
-  try {
-    const output = execSync(
-      `tar -tzf "${archivePath}" | grep 'solution\\.diff$'`,
-      { encoding: "utf-8" }
-    );
-    return output.trim().split("\n").filter(Boolean);
-  } catch {
-    return [];
-  }
-}
-
-function listBundleFiles(archivePath) {
-  try {
-    const output = execSync(
-      `tar -tzf "${archivePath}" | grep '\\.bundle$'`,
-      { encoding: "utf-8" }
-    );
-    return output.trim().split("\n").filter(Boolean);
-  } catch {
-    return [];
-  }
+function makeWorkspaceEntry() {
+  return { files: [], gradeFile: null, llmGradeFiles: [], codeReviewFiles: [], diffFile: null, bundleFile: null };
 }
 
 /**
@@ -215,7 +204,7 @@ function stripPaths(text) {
 function main() {
   const archives = getArchives();
   if (archives.length === 0) {
-    console.error("No final-*.tar.gz archives found in data/");
+    console.error("No final-*.tar.gz or archive-*.tar.gz archives found in data/");
     process.exit(1);
   }
 
@@ -226,10 +215,7 @@ function main() {
     const archiveName = basename(archive);
     console.log(`Processing ${archiveName}...`);
 
-    const solutionPaths = listSolutionFiles(archive);
-    const gradePaths = listGradeFiles(archive);
-    const diffPaths = listDiffFiles(archive);
-    const bundlePaths = listBundleFiles(archive);
+    const { solutionPaths, gradePaths, llmGradeMdPaths, codeReviewPaths, diffPaths, bundlePaths } = listArchiveFiles(archive);
 
     // Group by workspaceId
     const workspaces = new Map();
@@ -247,7 +233,7 @@ function main() {
       if (!relativePath) continue;
 
       if (!workspaces.has(workspaceId)) {
-        workspaces.set(workspaceId, { files: [], gradeFile: null, diffFile: null, bundleFile: null });
+        workspaces.set(workspaceId, makeWorkspaceEntry());
       }
       workspaces.get(workspaceId).files.push({ archivePath: p, relativePath });
     }
@@ -261,8 +247,38 @@ function main() {
       if (workspaces.has(workspaceId)) {
         workspaces.get(workspaceId).gradeFile = gp;
       } else {
-        workspaces.set(workspaceId, { files: [], gradeFile: gp, diffFile: null, bundleFile: null });
+        workspaces.set(workspaceId, { ...makeWorkspaceEntry(), gradeFile: gp });
       }
+    }
+
+    // Map LLM grade markdown files to workspaces
+    for (const gp of llmGradeMdPaths) {
+      const parts = gp.split("/");
+      const wsIdx = parts.indexOf("workspaces");
+      if (wsIdx === -1) continue;
+      const workspaceId = parts[wsIdx + 1];
+      const filename = parts[parts.length - 1];
+      const modelId = parseModelIdFromFilename(filename, "llm_grade_result_");
+      if (!modelId) continue;
+      if (!workspaces.has(workspaceId)) {
+        workspaces.set(workspaceId, makeWorkspaceEntry());
+      }
+      workspaces.get(workspaceId).llmGradeFiles.push({ path: gp, modelId });
+    }
+
+    // Map code review files to workspaces
+    for (const crp of codeReviewPaths) {
+      const parts = crp.split("/");
+      const wsIdx = parts.indexOf("workspaces");
+      if (wsIdx === -1) continue;
+      const workspaceId = parts[wsIdx + 1];
+      const filename = parts[parts.length - 1];
+      const modelId = parseModelIdFromFilename(filename, "code_review_result_");
+      if (!modelId) continue;
+      if (!workspaces.has(workspaceId)) {
+        workspaces.set(workspaceId, makeWorkspaceEntry());
+      }
+      workspaces.get(workspaceId).codeReviewFiles.push({ path: crp, modelId });
     }
 
     // Map diff files to workspaces
@@ -274,7 +290,7 @@ function main() {
       if (workspaces.has(workspaceId)) {
         workspaces.get(workspaceId).diffFile = dp;
       } else {
-        workspaces.set(workspaceId, { files: [], gradeFile: null, diffFile: dp, bundleFile: null });
+        workspaces.set(workspaceId, { ...makeWorkspaceEntry(), diffFile: dp });
       }
     }
 
@@ -285,7 +301,7 @@ function main() {
       if (workspaces.has(wsId)) {
         workspaces.get(wsId).bundleFile = bp;
       } else {
-        workspaces.set(wsId, { files: [], gradeFile: null, diffFile: null, bundleFile: bp });
+        workspaces.set(wsId, { ...makeWorkspaceEntry(), bundleFile: bp });
       }
     }
 
@@ -361,7 +377,7 @@ function main() {
           bundleCount++;
         }
 
-        // Extract grader review
+        // Extract grader review (old .txt format)
         let graderReview = null;
         if (ws.gradeFile) {
           try {
@@ -370,6 +386,33 @@ function main() {
           } catch {
             // Skip
           }
+        }
+
+        // Extract LLM grade reviews (new .md format with model IDs)
+        const llmGradeReviews = [];
+        for (const { path: gPath, modelId } of ws.llmGradeFiles) {
+          try {
+            const content = extractFile(archive, gPath);
+            llmGradeReviews.push({ modelId, content: stripPaths(content) });
+          } catch {
+            // Skip
+          }
+        }
+
+        // Extract code reviews
+        const codeReviews = [];
+        for (const { path: crPath, modelId } of ws.codeReviewFiles) {
+          try {
+            const content = extractFile(archive, crPath);
+            codeReviews.push({ modelId, content: stripPaths(content) });
+          } catch {
+            // Skip
+          }
+        }
+
+        // Backward compat: if no old .txt graderReview, use first LLM grade review
+        if (!graderReview && llmGradeReviews.length > 0) {
+          graderReview = { content: llmGradeReviews[0].content };
         }
 
         // Extract diff
@@ -387,7 +430,7 @@ function main() {
           }
         }
 
-        const data = { workspaceId, files, writeup, graderReview, diff };
+        const data = { workspaceId, files, writeup, graderReview, llmGradeReviews, codeReviews, diff };
         writeFileSync(join(OUT_DIR, `${workspaceId}.json`), JSON.stringify(data));
         totalFiles++;
       } catch (err) {

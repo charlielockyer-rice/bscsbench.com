@@ -1,0 +1,1 @@
+{"workspaceId":"comp140_spot_it_sonnet","modelUsage":[{"model":"claude-sonnet-4-6","inputTokens":8,"outputTokens":3505,"cacheReadTokens":226307,"costUsd":0.33401850000000005}],"claudeCodeVersion":"2.1.63","rateLimitEvents":0}

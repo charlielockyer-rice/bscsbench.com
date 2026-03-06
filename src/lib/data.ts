@@ -1,12 +1,17 @@
 import type {
   ArchiveRun,
   ArchiveWorkspace,
+  ArchiveLlmGrade,
+  ArchiveTestResultOld,
+  ArchiveTestResultNew,
   BenchmarkData,
   BenchmarkEntry,
   CourseResult,
   AssignmentResult,
   ModelInfo,
   ResultsFile,
+  TestResult,
+  LlmGradeEntry,
 } from "./types";
 import rawData from "../../data/results.json";
 
@@ -78,9 +83,146 @@ function groupWorkspacesByCourse(
   return groups;
 }
 
+/**
+ * Convert old-format test results (at workspace level) to the display TestResult type.
+ */
+function transformOldTestResults(results: ArchiveTestResultOld[]): TestResult[] {
+  return results.map((t) => ({
+    name: t.test_name,
+    status: t.status,
+    pointsEarned: t.points_earned,
+    pointsPossible: t.points_possible,
+    inputDescription: t.input_description,
+    expected: t.expected,
+    actual: t.actual,
+    errorMessage: t.error_message,
+    traceback: t.traceback,
+    executionTimeMs: t.execution_time_ms,
+  }));
+}
+
+/**
+ * Convert new-format test results (nested inside grade) to the display TestResult type.
+ * The new format uses different field names: name/passed/points/max_points vs
+ * test_name/status/points_earned/points_possible.
+ */
+function transformNewTestResults(results: ArchiveTestResultNew[]): TestResult[] {
+  return results.map((t) => ({
+    name: t.name,
+    status: t.passed ? "pass" : "fail",
+    pointsEarned: t.points,
+    pointsPossible: t.max_points,
+    inputDescription: null,
+    expected: t.expected || null,
+    actual: t.actual || null,
+    errorMessage: t.error,
+    traceback: null,
+    executionTimeMs: 0,
+  }));
+}
+
+/**
+ * Extract test results from a workspace, handling both old and new formats.
+ * Old format: ws.test_results (array at workspace level)
+ * New format: ws.grade.test_results (array nested inside grade object)
+ */
+function extractTestResults(ws: ArchiveWorkspace): TestResult[] | undefined {
+  // Old format: test_results at workspace level
+  if (ws.test_results && ws.test_results.length > 0) {
+    return transformOldTestResults(ws.test_results);
+  }
+  // New format: test_results nested inside grade
+  if (ws.grade?.test_results && ws.grade.test_results.length > 0) {
+    return transformNewTestResults(ws.grade.test_results);
+  }
+  return undefined;
+}
+
+/**
+ * Convert a dict of model_id -> ArchiveLlmGrade into an LlmGradeEntry array.
+ */
+function gradeDictToEntries(
+  dict: Record<string, ArchiveLlmGrade>
+): LlmGradeEntry[] | undefined {
+  const entries: LlmGradeEntry[] = [];
+  for (const [modelId, grade] of Object.entries(dict)) {
+    entries.push({
+      modelId,
+      status: grade.status,
+      pointsEarned: grade.points_earned,
+      pointsPossible: grade.points_possible,
+      feedback: grade.feedback,
+    });
+  }
+  return entries.length > 0 ? entries : undefined;
+}
+
+/**
+ * Build the llmGrades array from either old singular llm_grade or new plural llm_grades.
+ */
+function extractLlmGrades(ws: ArchiveWorkspace): LlmGradeEntry[] | undefined {
+  if (ws.llm_grades) return gradeDictToEntries(ws.llm_grades);
+  if (ws.llm_grade) {
+    return [
+      {
+        modelId: "grader",
+        status: ws.llm_grade.status,
+        pointsEarned: ws.llm_grade.points_earned,
+        pointsPossible: ws.llm_grade.points_possible,
+        feedback: ws.llm_grade.feedback,
+      },
+    ];
+  }
+  return undefined;
+}
+
+/**
+ * Build the codeReviews array from the new code_reviews dict.
+ */
+function extractCodeReviews(ws: ArchiveWorkspace): LlmGradeEntry[] | undefined {
+  if (!ws.code_reviews) return undefined;
+  return gradeDictToEntries(ws.code_reviews);
+}
+
+/**
+ * Build the backward-compatible singular llmGrade from either old or new format.
+ * Delegates to extractLlmGrades and picks the first graded (or first overall) entry.
+ */
+function extractLlmGradeSingular(
+  ws: ArchiveWorkspace
+): AssignmentResult["llmGrade"] | undefined {
+  const grades = extractLlmGrades(ws);
+  if (!grades) return undefined;
+  const pick = grades.find((g) => g.status === "graded") ?? grades[0];
+  if (!pick) return undefined;
+  return {
+    status: pick.status,
+    pointsEarned: pick.pointsEarned,
+    pointsPossible: pick.pointsPossible,
+    feedback: pick.feedback,
+  };
+}
+
+/**
+ * Check if a workspace has any graded LLM grade (either old or new format).
+ */
+function hasGradedLlmGrade(ws: ArchiveWorkspace): boolean {
+  if (ws.llm_grade?.status === "graded") return true;
+  if (ws.llm_grades) {
+    for (const grade of Object.values(ws.llm_grades)) {
+      if (grade.status === "graded") return true;
+    }
+  }
+  return false;
+}
+
 function transformRun(run: ArchiveRun): BenchmarkEntry {
   const modelId = run.run_metadata.model_id;
   const { tags, ...modelInfo } = getModelInfo(modelId);
+
+  // Handle timestamp being null: fall back to rebuilt_at
+  const date =
+    run.run_metadata.timestamp ?? run.run_metadata.rebuilt_at ?? "";
 
   const grouped = groupWorkspacesByCourse(run.workspaces);
 
@@ -98,6 +240,7 @@ function transformRun(run: ArchiveRun): BenchmarkEntry {
         ws.cache_read_tokens;
       return {
         id: ws.id,
+        assignmentId: ws.assignment_id,
         number: ws.assignment_number,
         displayName: ws.display_name,
         testsPassed: ws.grade?.tests_passed ?? 0,
@@ -111,26 +254,10 @@ function transformRun(run: ArchiveRun): BenchmarkEntry {
         isTimeout: ws.duration_ms === 0 && ws.cost_usd === 0 && ws.num_turns === 0,
         durationApiMs: ws.duration_api_ms,
         weight: assignmentScore?.weight ?? 1,
-        llmGrade: ws.llm_grade
-          ? {
-              status: ws.llm_grade.status,
-              pointsEarned: ws.llm_grade.points_earned,
-              pointsPossible: ws.llm_grade.points_possible,
-              feedback: ws.llm_grade.feedback,
-            }
-          : undefined,
-        testResults: ws.test_results?.map((t) => ({
-          name: t.test_name,
-          status: t.status,
-          pointsEarned: t.points_earned,
-          pointsPossible: t.points_possible,
-          inputDescription: t.input_description,
-          expected: t.expected,
-          actual: t.actual,
-          errorMessage: t.error_message,
-          traceback: t.traceback,
-          executionTimeMs: t.execution_time_ms,
-        })),
+        llmGrade: extractLlmGradeSingular(ws),
+        llmGrades: extractLlmGrades(ws),
+        codeReviews: extractCodeReviews(ws),
+        testResults: extractTestResults(ws),
       };
     });
 
@@ -172,10 +299,10 @@ function transformRun(run: ArchiveRun): BenchmarkEntry {
   );
 
   return {
-    id: `${modelId}-${run.run_metadata.timestamp}`,
+    id: `${modelId}-${date}`,
     model: modelInfo,
     tags,
-    date: run.run_metadata.timestamp,
+    date,
     scores: {
       overall: run.scores.overall,
       overallLetter: run.scores.overall_letter,
@@ -265,7 +392,7 @@ export function getBenchmarkData(): BenchmarkData {
   const coursesWithWritten = new Set<string>();
   for (const run of data.runs) {
     for (const ws of Object.values(run.workspaces)) {
-      if (ws.llm_grade?.status === "graded") {
+      if (hasGradedLlmGrade(ws)) {
         coursesWithWritten.add(ws.course);
       }
     }
