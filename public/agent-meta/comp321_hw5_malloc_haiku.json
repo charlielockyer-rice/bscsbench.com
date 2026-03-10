@@ -1,1 +1,1 @@
-{"workspaceId":"comp321_malloc_haiku","modelUsage":[{"model":"claude-haiku-4-5-20251001","inputTokens":291,"outputTokens":21221,"cacheReadTokens":2010479,"costUsd":0.37200265000000005}],"claudeCodeVersion":"2.1.63","rateLimitEvents":0}
+{"workspaceId":"comp321_hw5_malloc_haiku","modelUsage":[{"model":"claude-haiku-4-5-20251001","inputTokens":165,"outputTokens":11479,"cacheReadTokens":1200648,"costUsd":0.24065730000000002}],"claudeCodeVersion":"2.1.71","rateLimitEvents":0}

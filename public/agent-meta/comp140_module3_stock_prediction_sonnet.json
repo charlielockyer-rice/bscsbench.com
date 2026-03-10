@@ -1,1 +1,1 @@
-{"workspaceId":"comp140_stock_prediction_sonnet","modelUsage":[{"model":"claude-sonnet-4-6","inputTokens":16,"outputTokens":5608,"cacheReadTokens":463657,"costUsd":0.5539835}],"claudeCodeVersion":"","rateLimitEvents":0}
+{"workspaceId":"comp140_module3_stock_prediction_sonnet","modelUsage":[{"model":"claude-sonnet-4-6","inputTokens":21,"outputTokens":5407,"cacheReadTokens":374174,"costUsd":0.5700045}],"claudeCodeVersion":"2.1.70","rateLimitEvents":0}

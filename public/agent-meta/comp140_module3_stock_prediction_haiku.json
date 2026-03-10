@@ -1,1 +1,1 @@
-{"workspaceId":"comp140_stock_prediction_haiku","modelUsage":[{"model":"claude-haiku-4-5-20251001","inputTokens":121,"outputTokens":6801,"cacheReadTokens":664276,"costUsd":0.13926110000000003}],"claudeCodeVersion":"2.1.63","rateLimitEvents":0}
+{"workspaceId":"comp140_module3_stock_prediction_haiku","modelUsage":[{"model":"claude-haiku-4-5-20251001","inputTokens":170,"outputTokens":9447,"cacheReadTokens":1134822,"costUsd":0.22111345}],"claudeCodeVersion":"2.1.71","rateLimitEvents":0}

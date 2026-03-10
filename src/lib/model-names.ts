@@ -16,6 +16,8 @@ const MODEL_META: Record<string, ModelMeta> = {
   "claude-sonnet-4-6": { name: "Claude Sonnet 4.6", logo: "/logos/claude.svg" },
   "claude-haiku-4-5-20251001": { name: "Claude Haiku 4.5", logo: "/logos/claude.svg" },
   "gpt-5.3-codex": { name: "GPT-5.3 Codex", logo: "/logos/openai.png" },
+  "codex": { name: "Codex 5.3", logo: "/logos/openai.png" },
+  "opus": { name: "Opus 4.6", logo: "/logos/claude.svg" },
   "gpt-5.4": { name: "GPT-5.4", logo: "/logos/openai.png" },
   "gemini-3-flash": { name: "Gemini 3 Flash", logo: "/logos/google.png" },
   "qwen3-coder": { name: "Qwen3 Coder", logo: "/logos/qwen.png" },

@@ -187,20 +187,12 @@ export function ModelDetail({
                               isOpen && "rotate-90"
                             )}
                           />
-                          <Link
-                            href={`/courses/${courseId}`}
-                            className="font-medium hover:underline"
-                            onClick={(e) => e.stopPropagation()}
-                          >
+                          <span className="font-medium">
                             {info?.displayName ?? courseId}
-                          </Link>
-                          <Link
-                            href={`/courses/${courseId}`}
-                            className="text-xs text-muted-foreground hidden sm:inline hover:underline"
-                            onClick={(e) => e.stopPropagation()}
-                          >
+                          </span>
+                          <span className="text-xs text-muted-foreground hidden sm:inline">
                             {info?.title}
-                          </Link>
+                          </span>
                           {courseData.letter && (
                             <Badge
                               variant="outline"
@@ -354,13 +346,9 @@ export function ModelDetail({
                           isOpen && "rotate-90"
                         )}
                       />
-                      <Link
-                        href={`/courses/${courseId}`}
-                        className="font-medium hover:underline truncate"
-                        onClick={(e) => e.stopPropagation()}
-                      >
+                      <span className="font-medium truncate">
                         {info?.displayName ?? courseId}
-                      </Link>
+                      </span>
                       {courseData.letter && (
                         <Badge
                           variant="outline"

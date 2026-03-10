@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getBenchmarkData, getAssignmentBasesForCourse } from "@/lib/data";
 import { LanguageBadge } from "@/components/courses/LanguageBadge";
+import { cn } from "@/lib/utils";
 import {
   Table,
   TableBody,
@@ -13,10 +14,13 @@ import {
 
 export default async function CourseDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ model?: string }>;
 }) {
   const { id } = await params;
+  const { model: highlightModel } = await searchParams;
   const data = getBenchmarkData();
   const course = data.courses[id];
 
@@ -100,7 +104,7 @@ export default async function CourseDetailPage({
             </TableHeader>
             <TableBody>
               {courseEntries.map((entry, i) => (
-                <TableRow key={entry.model}>
+                <TableRow key={entry.model} className={cn(highlightModel === entry.modelId && "bg-primary/[0.06]")}>
                   <TableCell>{i + 1}</TableCell>
                   <TableCell>
                     <Link
@@ -147,7 +151,7 @@ export default async function CourseDetailPage({
             <Link
               key={entry.model}
               href={`/models/${entry.modelId}`}
-              className="block py-3 first:pt-0 hover:bg-muted/50"
+              className={cn("block py-3 first:pt-0 hover:bg-muted/50", highlightModel === entry.modelId && "bg-primary/[0.06]")}
             >
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 min-w-0">
@@ -201,7 +205,7 @@ export default async function CourseDetailPage({
             {assignmentCards.map((card) => (
               <Link
                 key={card.base}
-                href={`/courses/${id}/${card.base}`}
+                href={`/courses/${id}/${card.base}${highlightModel ? `?model=${highlightModel}` : ""}`}
                 className="group rounded-lg border bg-card p-6 transition-colors hover:bg-accent"
               >
                 <p className="text-sm font-medium text-muted-foreground">

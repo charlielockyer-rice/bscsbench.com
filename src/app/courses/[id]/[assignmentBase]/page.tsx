@@ -8,6 +8,7 @@ import { formatTime } from "@/lib/formatting";
 import { highlightCode, highlightMarkdownBlocks, getLangForFile } from "@/lib/shiki";
 import type { AssignmentData } from "@/lib/assignment-types";
 import { LanguageBadge } from "@/components/courses/LanguageBadge";
+import { cn } from "@/lib/utils";
 import { SolutionViewer } from "@/components/work/SolutionViewer";
 import { MarkdownWithToc } from "@/components/work/MarkdownWithToc";
 import { WorkTabs } from "@/components/work/WorkTabs";
@@ -22,10 +23,13 @@ import {
 
 export default async function AssignmentDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string; assignmentBase: string }>;
+  searchParams: Promise<{ model?: string }>;
 }) {
   const { id, assignmentBase } = await params;
+  const { model: highlightModel } = await searchParams;
   const data = getBenchmarkData();
   const course = data.courses[id];
 
@@ -91,7 +95,7 @@ export default async function AssignmentDetailPage({
   return (
     <div className="mx-auto max-w-[1800px] px-4 py-12 sm:px-6 lg:px-[5%]">
       <Link
-        href={`/courses/${id}`}
+        href={`/courses/${id}${highlightModel ? `?model=${highlightModel}` : ""}`}
         className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-8"
       >
         <ArrowLeft className="size-4" />
@@ -111,6 +115,7 @@ export default async function AssignmentDetailPage({
       </div>
 
       <WorkTabs
+        initialTab={highlightModel ? "leaderboard" : undefined}
         tabs={[
           {
             id: "instructions",
@@ -152,7 +157,7 @@ export default async function AssignmentDetailPage({
                     </TableHeader>
                     <TableBody>
                       {assignmentEntries.map((entry, i) => (
-                        <TableRow key={entry.model}>
+                        <TableRow key={entry.model} className={cn(highlightModel === entry.modelId && "bg-primary/[0.06]")}>
                           <TableCell>{i + 1}</TableCell>
                           <TableCell>
                             <div className="flex items-center gap-2">
@@ -205,7 +210,7 @@ export default async function AssignmentDetailPage({
                 {/* Mobile cards */}
                 <div className="divide-y md:hidden">
                   {assignmentEntries.map((entry, i) => (
-                    <div key={entry.model} className="py-3 first:pt-0">
+                    <div key={entry.model} className={cn("py-3 first:pt-0", highlightModel === entry.modelId && "bg-primary/[0.06]")}>
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2 min-w-0">
                           <span className="tabular-nums text-sm font-bold w-5 shrink-0 text-muted-foreground">

@@ -1,1 +1,1 @@
-{"workspaceId":"comp140_sports_analytics_haiku","modelUsage":[{"model":"claude-haiku-4-5-20251001","inputTokens":230,"outputTokens":15104,"cacheReadTokens":1699170,"costUsd":0.31535699999999994}],"claudeCodeVersion":"2.1.63","rateLimitEvents":0}
+{"workspaceId":"comp140_module6_sports_analytics_haiku","modelUsage":[{"model":"claude-haiku-4-5-20251001","inputTokens":258,"outputTokens":12996,"cacheReadTokens":2061138,"costUsd":0.34240430000000005}],"claudeCodeVersion":"2.1.71","rateLimitEvents":0}

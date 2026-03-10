@@ -28,7 +28,22 @@ function ReviewContent({ content }: { content: string }) {
   );
 }
 
-export function GraderReview({ reviews }: GraderReviewProps) {
+// Preferred display order: opus-like models first, then others
+const REVIEWER_ORDER: string[] = ["opus", "claude-opus-4.6", "claude-opus-4-6"];
+
+function sortReviews(reviews: ModelReview[]): ModelReview[] {
+  return [...reviews].sort((a, b) => {
+    const ai = REVIEWER_ORDER.indexOf(a.modelId);
+    const bi = REVIEWER_ORDER.indexOf(b.modelId);
+    if (ai !== -1 && bi !== -1) return ai - bi;
+    if (ai !== -1) return -1;
+    if (bi !== -1) return 1;
+    return 0;
+  });
+}
+
+export function GraderReview({ reviews: rawReviews }: GraderReviewProps) {
+  const reviews = sortReviews(rawReviews);
   const [activeIndex, setActiveIndex] = useState(0);
 
   if (reviews.length === 0) {

@@ -1,1 +1,1 @@
-{"workspaceId":"comp322_hw2_haiku","modelUsage":[{"model":"claude-haiku-4-5-20251001","inputTokens":198,"outputTokens":27280,"cacheReadTokens":1561115,"costUsd":0.3713532500000001}],"claudeCodeVersion":"2.1.63","rateLimitEvents":0}
+{"workspaceId":"comp322_hw2_haiku","modelUsage":[{"model":"claude-haiku-4-5-20251001","inputTokens":347,"outputTokens":35711,"cacheReadTokens":3351427,"costUsd":0.61991845}],"claudeCodeVersion":"2.1.71","rateLimitEvents":0}

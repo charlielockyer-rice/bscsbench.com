@@ -11,11 +11,11 @@ interface Tab {
   disabled?: boolean;
 }
 
-export function WorkTabs({ tabs }: { tabs: Tab[] }) {
+export function WorkTabs({ tabs, initialTab }: { tabs: Tab[]; initialTab?: string }) {
   const visibleTabs = tabs.filter((t) => !t.disabled);
 
   const [activeId, setActiveId] = useState(
-    () => visibleTabs[0]?.id ?? ""
+    () => initialTab && visibleTabs.some((t) => t.id === initialTab) ? initialTab : visibleTabs[0]?.id ?? ""
   );
 
   const activeLabel = visibleTabs.find((t) => t.id === activeId)?.label ?? "";

@@ -129,6 +129,11 @@ html {
   }
 }
 
+/* Invert dark logos (e.g. OpenAI) to white in dark mode */
+.dark img[src*="/logos/openai"] {
+  filter: invert(1);
+}
+
 /* Shiki dual-theme: activate dark theme colors in dark mode */
 .dark .shiki {
   background-color: var(--shiki-dark-bg) !important;
