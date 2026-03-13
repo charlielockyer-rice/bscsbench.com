@@ -43,7 +43,19 @@ const MODEL_REGISTRY: Record<
     logo: "/logos/openai.png",
     tags: ["closed-source"],
   },
+  "gpt-5.4": {
+    name: "GPT-5.4",
+    provider: "OpenAI",
+    logo: "/logos/openai.png",
+    tags: ["closed-source"],
+  },
   "gemini-3-flash": {
+    name: "Gemini 3 Flash",
+    provider: "Google",
+    logo: "/logos/google.png",
+    tags: ["closed-source"],
+  },
+  "gemini-3-flash-preview": {
     name: "Gemini 3 Flash",
     provider: "Google",
     logo: "/logos/google.png",
@@ -335,7 +347,9 @@ export function getAssignmentBase(workspaceId: string): string {
     .replace(/_opus$/, "")
     .replace(/_haiku$/, "")
     .replace(/_sonnet$/, "")
-    .replace(/_codex$/, "");
+    .replace(/_codex$/, "")
+    .replace(/_gpt54$/, "")
+    .replace(/_gemini3flash$/, "");
 }
 
 /** Get the list of assignments for a given course, derived from any entry's course data. */

@@ -48,7 +48,9 @@ function getAssignmentBase(workspaceId) {
     .replace(/_opus$/, "")
     .replace(/_haiku$/, "")
     .replace(/_sonnet$/, "")
-    .replace(/_codex$/, "");
+    .replace(/_codex$/, "")
+    .replace(/_gpt54$/, "")
+    .replace(/_gemini3flash$/, "");
 }
 
 // ---------------------------------------------------------------------------
@@ -178,7 +180,7 @@ function main() {
   for (const f of traceFiles) {
     const wsId = f.replace(".json", "");
     const base = getAssignmentBase(wsId);
-    const priority = wsId.includes("_opus") ? 0 : wsId.includes("_codex") ? 3 : wsId.includes("_haiku") ? 2 : 1;
+    const priority = wsId.includes("_opus") ? 0 : wsId.includes("_sonnet") ? 1 : wsId.includes("_haiku") ? 2 : wsId.includes("_codex") ? 3 : wsId.includes("_gpt54") ? 4 : wsId.includes("_gemini3flash") ? 5 : 6;
     const existing = byAssignment.get(base);
     if (!existing || priority < existing.priority) {
       byAssignment.set(base, { file: f, priority });

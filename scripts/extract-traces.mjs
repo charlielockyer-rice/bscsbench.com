@@ -26,7 +26,7 @@ function listTraceFiles(archivePath) {
 function extractTrace(archivePath, tracePath) {
   return execSync(`tar -xzf "${archivePath}" --to-stdout "${tracePath}"`, {
     encoding: "utf-8",
-    maxBuffer: 10 * 1024 * 1024,
+    maxBuffer: 50 * 1024 * 1024,
   });
 }
 
@@ -294,13 +294,132 @@ function processCodexTrace(raw) {
   return { metadata, turns, summary };
 }
 
-function isCodexTrace(raw) {
+function processGeminiTrace(raw) {
+  const lines = raw
+    .trim()
+    .split("\n")
+    .map((l) => JSON.parse(l));
+
+  let metadata = { workspaceId: "", model: "", sessionId: "", claudeCodeVersion: "", tools: [] };
+  let summary = {
+    durationMs: 0,
+    numTurns: 0,
+    totalCostUsd: 0,
+    isError: false,
+    resultText: "",
+    rateLimitEvents: 0,
+  };
+
+  const turns = [];
+  let currentBlocks = [];
+  let pendingText = "";
+  let turnIndex = 0;
+
+  // Collect tool results by tool_id
+  const toolResults = new Map();
+  // First pass: collect all tool results
+  for (const event of lines) {
+    if (event.type === "tool_result") {
+      toolResults.set(event.tool_id, {
+        status: event.status,
+        output: event.output || "",
+      });
+    }
+  }
+
+  for (const event of lines) {
+    if (event.type === "init") {
+      metadata.model = event.model || "";
+      metadata.sessionId = event.session_id || "";
+      continue;
+    }
+
+    if (event.type === "result") {
+      const stats = event.stats || {};
+      summary.durationMs = stats.duration_ms || 0;
+      summary.isError = event.status !== "success";
+      continue;
+    }
+
+    // Skip user messages
+    if (event.type === "message" && event.role === "user") {
+      continue;
+    }
+
+    // Assistant text deltas — accumulate
+    if (event.type === "message" && event.role === "assistant") {
+      pendingText += event.content || "";
+      continue;
+    }
+
+    if (event.type === "tool_use") {
+      // Flush pending text before the tool call
+      if (pendingText.trim()) {
+        currentBlocks.push({
+          type: "text",
+          text: stripPaths(pendingText.trim()),
+        });
+        pendingText = "";
+      }
+
+      const result = toolResults.get(event.tool_id);
+      currentBlocks.push({
+        type: "tool_call",
+        call: {
+          id: event.tool_id || "",
+          name: event.tool_name || "",
+          input: stripPathsDeep(event.parameters || {}),
+          output: truncate(stripPaths(result?.output || "")),
+        },
+      });
+      continue;
+    }
+
+    if (event.type === "tool_result") {
+      // Already collected in first pass; tool_result after a tool_use marks
+      // the end of that tool interaction. Flush current blocks as a turn.
+      if (pendingText.trim()) {
+        currentBlocks.push({
+          type: "text",
+          text: stripPaths(pendingText.trim()),
+        });
+        pendingText = "";
+      }
+      if (currentBlocks.length > 0) {
+        turns.push({ index: turnIndex, blocks: currentBlocks });
+        turnIndex++;
+        currentBlocks = [];
+      }
+      continue;
+    }
+  }
+
+  // Flush any remaining content
+  if (pendingText.trim()) {
+    currentBlocks.push({
+      type: "text",
+      text: stripPaths(pendingText.trim()),
+    });
+    pendingText = "";
+  }
+  if (currentBlocks.length > 0) {
+    turns.push({ index: turnIndex, blocks: currentBlocks });
+  }
+
+  summary.numTurns = turns.length;
+
+  return { metadata, turns, summary };
+}
+
+function detectTraceFormat(raw) {
   const firstLine = raw.trim().split("\n")[0];
   try {
     const event = JSON.parse(firstLine);
-    return event.type === "thread.started";
+    if (event.type === "thread.started") return "codex";
+    if (event.type === "init" && !event.subtype) return "gemini";
+    return "claude";
   } catch {
-    return false;
+    return "claude";
   }
 }
 
@@ -329,7 +448,8 @@ function main() {
 
       try {
         const raw = extractTrace(archive, tracePath);
-        const processed = isCodexTrace(raw) ? processCodexTrace(raw) : processTrace(raw);
+        const format = detectTraceFormat(raw);
+        const processed = format === "codex" ? processCodexTrace(raw) : format === "gemini" ? processGeminiTrace(raw) : processTrace(raw);
         processed.metadata.workspaceId = workspaceId;
 
         const outPath = join(OUT_DIR, `${workspaceId}.json`);

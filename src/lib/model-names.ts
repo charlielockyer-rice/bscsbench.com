@@ -20,6 +20,7 @@ const MODEL_META: Record<string, ModelMeta> = {
   "opus": { name: "Opus 4.6", logo: "/logos/claude.svg" },
   "gpt-5.4": { name: "GPT-5.4", logo: "/logos/openai.png" },
   "gemini-3-flash": { name: "Gemini 3 Flash", logo: "/logos/google.png" },
+  "gemini-3-flash-preview": { name: "Gemini 3 Flash", logo: "/logos/google.png" },
   "qwen3-coder": { name: "Qwen3 Coder", logo: "/logos/qwen.png" },
   "kimi-k2.5": { name: "Kimi K2.5", logo: "/logos/moonshot.png" },
 };
