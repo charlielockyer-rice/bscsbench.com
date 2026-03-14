@@ -62,6 +62,9 @@ export default async function AssignmentDetailPage({
         provider: e.model.provider,
         workspaceId: a.id,
         score: a.score,
+        codePct: a.codePct,
+        writtenPct: a.writtenPct,
+        reviewPct: a.reviewPct,
         testsPassed: a.testsPassed,
         testsTotal: a.testsTotal,
         cost: a.cost,
@@ -69,6 +72,11 @@ export default async function AssignmentDetailPage({
       }];
     })
     .sort((a, b) => b.score - a.score);
+
+  // Determine which dimension columns have at least one non-null value
+  const hasCodeCol = assignmentEntries.some((e) => e.codePct !== null);
+  const hasWrittenCol = assignmentEntries.some((e) => e.writtenPct !== null);
+  const hasReviewCol = assignmentEntries.some((e) => e.reviewPct !== null);
 
   // Pre-highlight code blocks in instructions markdown
   const highlightedBlocks = assignmentData.instructions
@@ -150,6 +158,9 @@ export default async function AssignmentDetailPage({
                         <TableHead className="w-16">Rank</TableHead>
                         <TableHead>Model</TableHead>
                         <TableHead className="text-right">Score</TableHead>
+                        {hasCodeCol && <TableHead className="text-right">Code</TableHead>}
+                        {hasWrittenCol && <TableHead className="text-right">Written</TableHead>}
+                        {hasReviewCol && <TableHead className="text-right">Review</TableHead>}
                         <TableHead className="text-right">Tests</TableHead>
                         <TableHead className="text-right">Time</TableHead>
                         <TableHead className="text-right">Cost</TableHead>
@@ -192,6 +203,33 @@ export default async function AssignmentDetailPage({
                           <TableCell className="text-right tabular-nums">
                             {entry.score.toFixed(1)}%
                           </TableCell>
+                          {hasCodeCol && (
+                            <TableCell className="text-right tabular-nums">
+                              {entry.codePct !== null ? (
+                                `${entry.codePct.toFixed(1)}%`
+                              ) : (
+                                <span className="text-muted-foreground">N/A</span>
+                              )}
+                            </TableCell>
+                          )}
+                          {hasWrittenCol && (
+                            <TableCell className="text-right tabular-nums">
+                              {entry.writtenPct !== null ? (
+                                `${entry.writtenPct.toFixed(1)}%`
+                              ) : (
+                                <span className="text-muted-foreground">N/A</span>
+                              )}
+                            </TableCell>
+                          )}
+                          {hasReviewCol && (
+                            <TableCell className="text-right tabular-nums">
+                              {entry.reviewPct !== null ? (
+                                `${entry.reviewPct.toFixed(1)}%`
+                              ) : (
+                                <span className="text-muted-foreground">N/A</span>
+                              )}
+                            </TableCell>
+                          )}
                           <TableCell className="text-right tabular-nums">
                             {entry.testsPassed}/{entry.testsTotal}
                           </TableCell>
@@ -249,10 +287,25 @@ export default async function AssignmentDetailPage({
                           {entry.score.toFixed(1)}%
                         </span>
                       </div>
-                      <div className="mt-1 ml-7 flex gap-4 text-xs text-muted-foreground">
+                      <div className="mt-1 ml-7 flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-muted-foreground">
                         <span className="tabular-nums">
                           {entry.testsPassed}/{entry.testsTotal} tests
                         </span>
+                        {entry.codePct !== null && (
+                          <span className="tabular-nums">
+                            Code {entry.codePct.toFixed(1)}%
+                          </span>
+                        )}
+                        {entry.writtenPct !== null && (
+                          <span className="tabular-nums">
+                            Written {entry.writtenPct.toFixed(1)}%
+                          </span>
+                        )}
+                        {entry.reviewPct !== null && (
+                          <span className="tabular-nums">
+                            Review {entry.reviewPct.toFixed(1)}%
+                          </span>
+                        )}
                         <span className="tabular-nums">
                           {entry.timeSeconds < 60
                             ? `${entry.timeSeconds.toFixed(0)}s`

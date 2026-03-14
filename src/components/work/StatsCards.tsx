@@ -8,11 +8,14 @@ import {
   Cpu,
   Zap,
   Tag,
+  Code,
+  FileText,
+  Eye,
 } from "lucide-react";
 import type { TraceSummary, TraceMetadata } from "@/lib/trace-types";
 import type { AssignmentResult } from "@/lib/types";
 import type { AgentMeta } from "@/lib/agent-meta-types";
-import { formatCost, formatTime, formatTokens } from "@/lib/formatting";
+import { formatCost, formatTime, formatTokens, formatPercent } from "@/lib/formatting";
 import { StatCard } from "@/components/ui/StatCard";
 
 export function StatsCards({
@@ -72,6 +75,27 @@ export function StatsCards({
           icon={Zap}
           label="Rate Limits"
           value={String(summary.rateLimitEvents)}
+        />
+      )}
+      {assignment?.codePct != null && (
+        <StatCard
+          icon={Code}
+          label="Code Score"
+          value={formatPercent(assignment.codePct)}
+        />
+      )}
+      {assignment?.writtenPct != null && (
+        <StatCard
+          icon={FileText}
+          label="Written Score"
+          value={formatPercent(assignment.writtenPct)}
+        />
+      )}
+      {assignment?.reviewPct != null && (
+        <StatCard
+          icon={Eye}
+          label="Review Score"
+          value={formatPercent(assignment.reviewPct)}
         />
       )}
       {(() => {

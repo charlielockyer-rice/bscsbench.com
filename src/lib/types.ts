@@ -94,7 +94,13 @@ export interface ArchiveCourseTotals {
 }
 
 export interface ArchiveScores {
-  assignments: Record<string, { pct: number; weight: number }>;
+  assignments: Record<string, {
+    pct: number;
+    weight: number;
+    code_pct?: number | null;
+    written_pct?: number | null;
+    review_pct?: number | null;
+  }>;
   courses: Record<string, { grade: number; letter: string; credit_hours: number }>;
   overall: number;
   overall_letter: string;
@@ -176,6 +182,9 @@ export interface AssignmentResult {
   testsPassed: number;
   testsTotal: number;
   score: number; // 0-100, composite from scores.assignments
+  codePct: number | null;
+  writtenPct: number | null;
+  reviewPct: number | null;
   cost: number;
   timeSeconds: number;
   tokens: number;
@@ -252,3 +261,5 @@ export type RankingMetric =
   | "speed";
 
 export type SortDirection = "asc" | "desc";
+
+export type ScoreDimension = "overall" | "code" | "written" | "review";

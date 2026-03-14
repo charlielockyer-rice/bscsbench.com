@@ -17,6 +17,7 @@ import {
   formatTokens,
   formatGpa,
 } from "@/lib/formatting";
+import { getCourseDimensionGrade } from "@/lib/scoring";
 import { PassRateBar } from "@/components/leaderboard/PassRateBar";
 import { Badge } from "@/components/ui/badge";
 import { StatCard } from "@/components/ui/StatCard";
@@ -43,6 +44,12 @@ export function ModelDetail({
   const courseEntries = Object.entries(entry.courses).sort(([a], [b]) =>
     a.localeCompare(b)
   );
+
+  // Determine which dimension columns have at least one non-null value across all courses
+  const allAssignments = courseEntries.flatMap(([, c]) => c.assignments);
+  const hasCodeCol = allAssignments.some((a) => a.codePct !== null);
+  const hasWrittenCol = allAssignments.some((a) => a.writtenPct !== null);
+  const hasReviewCol = allAssignments.some((a) => a.reviewPct !== null);
 
   function getWrittenTotals(assignments: (typeof entry.courses)[string]["assignments"]) {
     let earned = 0, possible = 0;
@@ -162,6 +169,9 @@ export function ModelDetail({
                 <th className="p-3 pr-4 text-left font-medium w-32">Tests</th>
                 <th className="p-3 pr-4 text-left font-medium w-32">Written</th>
                 <th className="p-3 pr-4 text-left font-medium w-40">Score</th>
+                {hasCodeCol && <th className="p-3 pr-4 text-left font-medium w-20">Code</th>}
+                {hasWrittenCol && <th className="p-3 pr-4 text-left font-medium w-20">Writ.</th>}
+                {hasReviewCol && <th className="p-3 pr-4 text-left font-medium w-20">Review</th>}
                 <th className="p-3 pr-4 text-right font-medium">Cost</th>
                 <th className="p-3 text-right font-medium">Time</th>
               </tr>
@@ -236,6 +246,30 @@ export function ModelDetail({
                           </span>
                         </div>
                       </td>
+                      {hasCodeCol && (
+                        <td className="p-3 pr-4 tabular-nums text-xs">
+                          {(() => {
+                            const v = getCourseDimensionGrade(courseData, "code");
+                            return v !== null ? formatPercent(v) : <span className="text-muted-foreground">N/A</span>;
+                          })()}
+                        </td>
+                      )}
+                      {hasWrittenCol && (
+                        <td className="p-3 pr-4 tabular-nums text-xs">
+                          {(() => {
+                            const v = getCourseDimensionGrade(courseData, "written");
+                            return v !== null ? formatPercent(v) : <span className="text-muted-foreground">N/A</span>;
+                          })()}
+                        </td>
+                      )}
+                      {hasReviewCol && (
+                        <td className="p-3 pr-4 tabular-nums text-xs">
+                          {(() => {
+                            const v = getCourseDimensionGrade(courseData, "review");
+                            return v !== null ? formatPercent(v) : <span className="text-muted-foreground">N/A</span>;
+                          })()}
+                        </td>
+                      )}
                       <td className="p-3 pr-4 text-right tabular-nums">
                         {formatCost(courseData.totalCost)}
                       </td>
@@ -302,6 +336,39 @@ export function ModelDetail({
                                   </span>
                                 </Link>
                               </td>
+                              {hasCodeCol && (
+                                <td className="py-2 pl-3 pr-4 tabular-nums">
+                                  <Link href={workHref}>
+                                    {a.codePct !== null ? (
+                                      formatPercent(a.codePct)
+                                    ) : (
+                                      <span className="text-muted-foreground">N/A</span>
+                                    )}
+                                  </Link>
+                                </td>
+                              )}
+                              {hasWrittenCol && (
+                                <td className="py-2 pl-3 pr-4 tabular-nums">
+                                  <Link href={workHref}>
+                                    {a.writtenPct !== null ? (
+                                      formatPercent(a.writtenPct)
+                                    ) : (
+                                      <span className="text-muted-foreground">N/A</span>
+                                    )}
+                                  </Link>
+                                </td>
+                              )}
+                              {hasReviewCol && (
+                                <td className="py-2 pl-3 pr-4 tabular-nums">
+                                  <Link href={workHref}>
+                                    {a.reviewPct !== null ? (
+                                      formatPercent(a.reviewPct)
+                                    ) : (
+                                      <span className="text-muted-foreground">N/A</span>
+                                    )}
+                                  </Link>
+                                </td>
+                              )}
                               <td className="py-2 pl-3 pr-4 text-right tabular-nums">
                                 <Link href={workHref} className="block">
                                   {formatCost(a.cost)}
@@ -417,6 +484,15 @@ export function ModelDetail({
                             )}
                             {hasWritten && (
                               <span>{a.llmGrade!.pointsEarned}/{a.llmGrade!.pointsPossible} written</span>
+                            )}
+                            {a.codePct !== null && (
+                              <span>Code {formatPercent(a.codePct)}</span>
+                            )}
+                            {a.writtenPct !== null && (
+                              <span>Writ. {formatPercent(a.writtenPct)}</span>
+                            )}
+                            {a.reviewPct !== null && (
+                              <span>Review {formatPercent(a.reviewPct)}</span>
                             )}
                             <span>{formatCost(a.cost)}</span>
                             <span>{formatTime(a.timeSeconds)}</span>

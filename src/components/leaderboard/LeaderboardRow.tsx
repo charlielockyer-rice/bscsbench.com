@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
-import type { BenchmarkEntry, CourseInfo } from "@/lib/types";
+import type { BenchmarkEntry, CourseInfo, ScoreDimension } from "@/lib/types";
 import {
   formatPercent,
   formatCost,
@@ -10,6 +10,7 @@ import {
   formatGpa,
   formatTime,
 } from "@/lib/formatting";
+import { getOverallDimensionScore } from "@/lib/scoring";
 import { Badge } from "@/components/ui/badge";
 import {
   Tooltip,
@@ -63,13 +64,16 @@ export function LeaderboardRow({
   entry,
   rank,
   courses,
+  scoreDimension = "overall",
 }: {
   entry: BenchmarkEntry;
   rank: number;
   courses: Record<string, CourseInfo>;
+  scoreDimension?: ScoreDimension;
 }) {
   const courseIds = Object.keys(courses).sort();
   const href = `/models/${entry.model.id}`;
+  const dimensionScore = getOverallDimensionScore(entry, scoreDimension);
 
   return (
     <>
@@ -125,7 +129,11 @@ export function LeaderboardRow({
           <Link href={href}>
             <div className="flex flex-col">
               <span className="tabular-nums text-sm font-semibold">
-                {formatPercent(entry.scores.overall)}
+                {dimensionScore !== null ? (
+                  formatPercent(dimensionScore)
+                ) : (
+                  <span className="text-muted-foreground">N/A</span>
+                )}
               </span>
               <span className="flex items-center gap-1 tabular-nums text-xs text-muted-foreground">
                 {formatGpa(entry.scores.gpa)} GPA
@@ -213,7 +221,11 @@ export function LeaderboardRow({
               </div>
               <div className="text-right">
                 <div className="tabular-nums text-lg font-semibold">
-                  {formatPercent(entry.scores.overall)}
+                  {dimensionScore !== null ? (
+                    formatPercent(dimensionScore)
+                  ) : (
+                    <span className="text-muted-foreground">N/A</span>
+                  )}
                 </div>
                 <div className="flex items-center justify-end gap-1 tabular-nums text-xs text-muted-foreground">
                   {formatGpa(entry.scores.gpa)} GPA

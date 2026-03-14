@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import type { RankingMetric } from "@/lib/types";
+import type { RankingMetric, ScoreDimension } from "@/lib/types";
 import { getBenchmarkData } from "@/lib/data";
 import {
   sortEntries,
@@ -15,6 +15,8 @@ export function useLeaderboardState() {
   const data = useMemo(() => getBenchmarkData(), []);
 
   const [rankingMetric, setRankingMetric] = useState<RankingMetric>("overall");
+  const [scoreDimension, setScoreDimension] =
+    useState<ScoreDimension>("overall");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [selectedCourses, setSelectedCourses] = useState<string[]>([]);
   const [search, setSearch] = useState("");
@@ -26,14 +28,23 @@ export function useLeaderboardState() {
     result = filterBySearch(result, search);
     result = filterByCourses(result, selectedCourses);
     const direction = rankingMetric === "totalTime" ? "asc" : "desc";
-    result = sortEntries(result, rankingMetric, direction);
+    result = sortEntries(result, rankingMetric, direction, scoreDimension);
     return result;
-  }, [data.entries, selectedTags, search, selectedCourses, rankingMetric]);
+  }, [
+    data.entries,
+    selectedTags,
+    search,
+    selectedCourses,
+    rankingMetric,
+    scoreDimension,
+  ]);
 
   return {
     entries,
     rankingMetric,
     setRankingMetric,
+    scoreDimension,
+    setScoreDimension,
     selectedTags,
     setSelectedTags,
     selectedCourses,

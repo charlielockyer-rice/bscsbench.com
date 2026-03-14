@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getBenchmarkData, getAssignmentBasesForCourse } from "@/lib/data";
+import { getCourseDimensionGrade } from "@/lib/scoring";
 import { LanguageBadge } from "@/components/courses/LanguageBadge";
 import { cn } from "@/lib/utils";
 import {
@@ -42,9 +43,17 @@ export default async function CourseDetailPage({
         solved: c.assignments.filter((a) => a.score >= 100).length,
         total: c.assignments.length,
         cost: c.totalCost,
+        codePct: getCourseDimensionGrade(c, "code"),
+        writtenPct: getCourseDimensionGrade(c, "written"),
+        reviewPct: getCourseDimensionGrade(c, "review"),
       };
     })
     .sort((a, b) => b.grade - a.grade);
+
+  // Determine which dimension columns have at least one non-null value
+  const hasCodeCol = courseEntries.some((e) => e.codePct !== null);
+  const hasWrittenCol = courseEntries.some((e) => e.writtenPct !== null);
+  const hasReviewCol = courseEntries.some((e) => e.reviewPct !== null);
 
   // Build assignment cards with stats across models
   const assignmentBases = getAssignmentBasesForCourse(id);
@@ -97,6 +106,9 @@ export default async function CourseDetailPage({
                 <TableHead className="w-16">Rank</TableHead>
                 <TableHead>Model</TableHead>
                 <TableHead className="text-right">Grade</TableHead>
+                {hasCodeCol && <TableHead className="text-right">Code</TableHead>}
+                {hasWrittenCol && <TableHead className="text-right">Written</TableHead>}
+                {hasReviewCol && <TableHead className="text-right">Review</TableHead>}
                 <TableHead className="text-right">Pass Rate</TableHead>
                 <TableHead className="text-right">Solved</TableHead>
                 <TableHead className="text-right">Cost</TableHead>
@@ -130,6 +142,33 @@ export default async function CourseDetailPage({
                   <TableCell className="text-right tabular-nums">
                     {entry.grade.toFixed(1)}% ({entry.letter})
                   </TableCell>
+                  {hasCodeCol && (
+                    <TableCell className="text-right tabular-nums">
+                      {entry.codePct !== null ? (
+                        `${entry.codePct.toFixed(1)}%`
+                      ) : (
+                        <span className="text-muted-foreground">N/A</span>
+                      )}
+                    </TableCell>
+                  )}
+                  {hasWrittenCol && (
+                    <TableCell className="text-right tabular-nums">
+                      {entry.writtenPct !== null ? (
+                        `${entry.writtenPct.toFixed(1)}%`
+                      ) : (
+                        <span className="text-muted-foreground">N/A</span>
+                      )}
+                    </TableCell>
+                  )}
+                  {hasReviewCol && (
+                    <TableCell className="text-right tabular-nums">
+                      {entry.reviewPct !== null ? (
+                        `${entry.reviewPct.toFixed(1)}%`
+                      ) : (
+                        <span className="text-muted-foreground">N/A</span>
+                      )}
+                    </TableCell>
+                  )}
                   <TableCell className="text-right tabular-nums">
                     {entry.passRate.toFixed(1)}%
                   </TableCell>
@@ -182,10 +221,25 @@ export default async function CourseDetailPage({
                   </span>
                 </span>
               </div>
-              <div className="mt-1 ml-7 flex gap-4 text-xs text-muted-foreground">
+              <div className="mt-1 ml-7 flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-muted-foreground">
                 <span className="tabular-nums">
                   Pass {entry.passRate.toFixed(1)}%
                 </span>
+                {entry.codePct !== null && (
+                  <span className="tabular-nums">
+                    Code {entry.codePct.toFixed(1)}%
+                  </span>
+                )}
+                {entry.writtenPct !== null && (
+                  <span className="tabular-nums">
+                    Written {entry.writtenPct.toFixed(1)}%
+                  </span>
+                )}
+                {entry.reviewPct !== null && (
+                  <span className="tabular-nums">
+                    Review {entry.reviewPct.toFixed(1)}%
+                  </span>
+                )}
                 <span className="tabular-nums">
                   {entry.solved}/{entry.total} solved
                 </span>

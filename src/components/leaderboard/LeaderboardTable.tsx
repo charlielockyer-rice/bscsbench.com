@@ -2,6 +2,7 @@
 
 import { useLeaderboardState } from "@/hooks/useLeaderboardState";
 import { MetricSelector } from "./MetricSelector";
+import { ScoreDimensionSelector } from "./ScoreDimensionSelector";
 import { Filters } from "./Filters";
 import { LeaderboardRow } from "./LeaderboardRow";
 import {
@@ -17,6 +18,8 @@ export function LeaderboardTable() {
     entries,
     rankingMetric,
     setRankingMetric,
+    scoreDimension,
+    setScoreDimension,
     selectedTags,
     setSelectedTags,
     selectedCourses,
@@ -35,7 +38,13 @@ export function LeaderboardTable() {
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <MetricSelector value={rankingMetric} onChange={setRankingMetric} />
+        <div className="flex items-center gap-3">
+          <MetricSelector value={rankingMetric} onChange={setRankingMetric} />
+          <ScoreDimensionSelector
+            value={scoreDimension}
+            onChange={setScoreDimension}
+          />
+        </div>
         <Filters
           tags={allTags}
           selectedTags={selectedTags}
@@ -82,6 +91,7 @@ export function LeaderboardTable() {
               entry={entry}
               rank={i + 1}
               courses={courses}
+              scoreDimension={scoreDimension}
             />
           ))}
           {entries.length === 0 && (

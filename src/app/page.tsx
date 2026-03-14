@@ -8,7 +8,7 @@ export default function Home() {
           BSCS Bench Leaderboard
         </h1>
         <p className="mt-2 text-lg text-muted-foreground">
-          AI agents evaluated on 54 assignments across 9 CS courses at Rice
+          AI agents evaluated on 66 assignments across 11 CS courses at Rice
           University.
         </p>
       </div>

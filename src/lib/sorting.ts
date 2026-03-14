@@ -1,9 +1,19 @@
-import type { BenchmarkEntry, RankingMetric, SortDirection } from "./types";
+import type {
+  BenchmarkEntry,
+  RankingMetric,
+  ScoreDimension,
+  SortDirection,
+} from "./types";
+import { getOverallDimensionScore } from "./scoring";
 
-function getMetricValue(entry: BenchmarkEntry, metric: RankingMetric): number {
+function getMetricValue(
+  entry: BenchmarkEntry,
+  metric: RankingMetric,
+  dimension: ScoreDimension = "overall"
+): number | null {
   switch (metric) {
     case "overall":
-      return entry.scores.overall;
+      return getOverallDimensionScore(entry, dimension);
     case "gpa":
       return entry.scores.gpa;
     case "passRate":
@@ -26,11 +36,16 @@ function getMetricValue(entry: BenchmarkEntry, metric: RankingMetric): number {
 export function sortEntries(
   entries: BenchmarkEntry[],
   metric: RankingMetric,
-  direction: SortDirection = "desc"
+  direction: SortDirection = "desc",
+  dimension: ScoreDimension = "overall"
 ): BenchmarkEntry[] {
   return [...entries].sort((a, b) => {
-    const aVal = getMetricValue(a, metric);
-    const bVal = getMetricValue(b, metric);
+    const aVal = getMetricValue(a, metric, dimension);
+    const bVal = getMetricValue(b, metric, dimension);
+    // Null values sort to the bottom regardless of direction
+    if (aVal === null && bVal === null) return 0;
+    if (aVal === null) return 1;
+    if (bVal === null) return -1;
     return direction === "desc" ? bVal - aVal : aVal - bVal;
   });
 }
