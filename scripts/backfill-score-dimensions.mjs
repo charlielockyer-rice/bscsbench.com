@@ -36,9 +36,9 @@ for (const run of results.runs) {
       codePct = grade.performance_index ?? grade.score_percentage ?? null;
     }
 
-    // written_pct: average of graded llm_grades
+    // written_pct: average of graded llm_grades (skip 0/0 non-grades)
     const gradedLlm = Object.values(llmGrades)
-      .filter((g) => g.status === "graded" && g.score_percentage != null);
+      .filter((g) => g.status === "graded" && g.score_percentage != null && g.points_possible > 0);
     let writtenPct = null;
     if (gradedLlm.length > 0) {
       writtenPct =
