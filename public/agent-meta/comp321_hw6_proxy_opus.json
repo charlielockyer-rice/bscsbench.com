@@ -1,1 +1,1 @@
-{"workspaceId":"comp321_proxy_opus","modelUsage":[{"model":"claude-opus-4-6","inputTokens":50,"outputTokens":67472,"cacheReadTokens":4995667,"costUsd":5.024521000000001},{"model":"claude-haiku-4-5-20251001","inputTokens":47,"outputTokens":3490,"cacheReadTokens":544851,"costUsd":0.1381171}],"claudeCodeVersion":"2.1.63","rateLimitEvents":0}
+{"workspaceId":"comp321_hw6_proxy_opus","modelUsage":[{"model":"claude-opus-4-6","inputTokens":18,"outputTokens":53312,"cacheReadTokens":1103573,"costUsd":2.51065775}],"claudeCodeVersion":"2.1.74","rateLimitEvents":0}

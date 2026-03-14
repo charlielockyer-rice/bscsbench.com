@@ -1,1 +1,1 @@
-{"workspaceId":"comp321_malloc_opus","modelUsage":[{"model":"claude-opus-4-6","inputTokens":57,"outputTokens":228771,"cacheReadTokens":4567270,"costUsd":9.837307499999998}],"claudeCodeVersion":"2.1.63","rateLimitEvents":0}
+{"workspaceId":"comp321_hw5_malloc_opus","modelUsage":[{"model":"claude-opus-4-6","inputTokens":1233,"outputTokens":143943,"cacheReadTokens":1921902,"costUsd":5.794484749999999}],"claudeCodeVersion":"2.1.74","rateLimitEvents":0}

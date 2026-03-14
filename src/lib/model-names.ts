@@ -18,6 +18,7 @@ const MODEL_META: Record<string, ModelMeta> = {
   "gpt-5.3-codex": { name: "GPT-5.3 Codex", logo: "/logos/openai.png" },
   "codex": { name: "Codex 5.3", logo: "/logos/openai.png" },
   "opus": { name: "Opus 4.6", logo: "/logos/claude.svg" },
+  "claude": { name: "Claude", logo: "/logos/claude.svg" },
   "gpt-5.4": { name: "GPT-5.4", logo: "/logos/openai.png" },
   "gemini-3-flash": { name: "Gemini 3 Flash", logo: "/logos/google.png" },
   "gemini-3-flash-preview": { name: "Gemini 3 Flash", logo: "/logos/google.png" },

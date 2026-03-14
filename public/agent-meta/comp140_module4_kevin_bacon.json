@@ -1,1 +1,0 @@
-{"workspaceId":"comp140_kevin_bacon","modelUsage":[{"model":"claude-sonnet-4-6","inputTokens":12,"outputTokens":3855,"cacheReadTokens":385914,"costUsd":0.43732325000000005},{"model":"claude-haiku-4-5-20251001","inputTokens":946,"outputTokens":32,"cacheReadTokens":0,"costUsd":0.001106}],"claudeCodeVersion":"2.1.61","rateLimitEvents":0}

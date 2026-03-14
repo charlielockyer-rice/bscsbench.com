@@ -1,1 +1,1 @@
-{"workspaceId":"comp411_assignment3_opus","modelUsage":[{"model":"claude-opus-4-6","inputTokens":18,"outputTokens":37517,"cacheReadTokens":1491011,"costUsd":2.2977955000000003}],"claudeCodeVersion":"2.1.63","rateLimitEvents":0}
+{"workspaceId":"comp411_assignment3_opus","modelUsage":[{"model":"claude-opus-4-6","inputTokens":37,"outputTokens":50064,"cacheReadTokens":3147109,"costUsd":3.6965582500000007}],"claudeCodeVersion":"2.1.74","rateLimitEvents":0}

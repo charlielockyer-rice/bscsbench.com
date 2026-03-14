@@ -1,1 +1,0 @@
-{"workspaceId":"comp321_shell","modelUsage":[{"model":"claude-sonnet-4-6","inputTokens":54,"outputTokens":45662,"cacheReadTokens":3786223,"costUsd":3.575525249999999},{"model":"claude-haiku-4-5-20251001","inputTokens":10822,"outputTokens":974,"cacheReadTokens":0,"costUsd":0.015692}],"claudeCodeVersion":"2.1.62","rateLimitEvents":0}

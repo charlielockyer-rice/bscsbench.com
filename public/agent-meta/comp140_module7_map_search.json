@@ -1,1 +1,0 @@
-{"workspaceId":"comp140_map_search","modelUsage":[{"model":"claude-sonnet-4-6","inputTokens":10,"outputTokens":5631,"cacheReadTokens":346074,"costUsd":0.53288075},{"model":"claude-haiku-4-5-20251001","inputTokens":1028,"outputTokens":32,"cacheReadTokens":0,"costUsd":0.001188}],"claudeCodeVersion":"2.1.61","rateLimitEvents":0}

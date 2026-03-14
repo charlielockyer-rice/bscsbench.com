@@ -1,1 +1,0 @@
-{"workspaceId":"comp140_circles","modelUsage":[{"model":"claude-sonnet-4-6","inputTokens":8,"outputTokens":2413,"cacheReadTokens":193991,"costUsd":0.37880425},{"model":"claude-haiku-4-5-20251001","inputTokens":703,"outputTokens":32,"cacheReadTokens":0,"costUsd":0.0008629999999999999}],"claudeCodeVersion":"2.1.61","rateLimitEvents":0}

@@ -1,1 +1,1 @@
-{"workspaceId":"comp310_hw2_sonnet","modelUsage":[{"model":"claude-sonnet-4-6","inputTokens":38,"outputTokens":10288,"cacheReadTokens":934259,"costUsd":1.017607}],"claudeCodeVersion":"2.1.70","rateLimitEvents":0}
+{"workspaceId":"comp310_hw2_sonnet","modelUsage":[{"model":"claude-sonnet-4-6","inputTokens":41,"outputTokens":85308,"cacheReadTokens":1978183,"costUsd":2.3599741499999998},{"model":"claude-haiku-4-5-20251001","inputTokens":22,"outputTokens":879,"cacheReadTokens":86482,"costUsd":0.0656177}],"claudeCodeVersion":"2.1.74","rateLimitEvents":0}

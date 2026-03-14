@@ -1,1 +1,0 @@
-{"workspaceId":"comp215_homework4","modelUsage":[{"model":"claude-sonnet-4-6","inputTokens":23,"outputTokens":9337,"cacheReadTokens":1007635,"costUsd":0.9836575000000001},{"model":"claude-haiku-4-5-20251001","inputTokens":422,"outputTokens":32,"cacheReadTokens":0,"costUsd":0.000582}],"claudeCodeVersion":"2.1.61","rateLimitEvents":0}

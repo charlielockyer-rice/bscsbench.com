@@ -1,1 +1,1 @@
-{"workspaceId":"comp321_hw5_malloc_sonnet","modelUsage":[{"model":"claude-sonnet-4-6","inputTokens":39,"outputTokens":122660,"cacheReadTokens":2427373,"costUsd":5.293275250000001}],"claudeCodeVersion":"2.1.70","rateLimitEvents":0}
+{"workspaceId":"comp321_hw5_malloc_sonnet","modelUsage":[{"model":"claude-sonnet-4-6","inputTokens":1727,"outputTokens":155540,"cacheReadTokens":2638501,"costUsd":3.9208937999999995}],"claudeCodeVersion":"2.1.74","rateLimitEvents":0}

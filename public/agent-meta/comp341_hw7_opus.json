@@ -1,1 +1,1 @@
-{"workspaceId":"comp341_hw7_opus","modelUsage":[{"model":"claude-opus-4-6","inputTokens":83,"outputTokens":19205,"cacheReadTokens":1545702,"costUsd":1.6389284999999998},{"model":"claude-haiku-4-5-20251001","inputTokens":39,"outputTokens":2863,"cacheReadTokens":211281,"costUsd":0.0695171}],"claudeCodeVersion":"2.1.63","rateLimitEvents":0}
+{"workspaceId":"comp341_hw7_opus","modelUsage":[{"model":"claude-opus-4-6","inputTokens":33,"outputTokens":11475,"cacheReadTokens":1553258,"costUsd":1.4208252500000005}],"claudeCodeVersion":"2.1.74","rateLimitEvents":0}
